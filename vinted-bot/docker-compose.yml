@@ -1,0 +1,43 @@
+services:
+  vinted-bot:
+    image: ghcr.io/jasp-nerd/vinted-bot:latest
+    container_name: vinted-bot
+    restart: unless-stopped
+    environment:
+      TZ: Europe/Paris
+      VINTED_BOT_POLL_DEFAULT_INTERVAL_S: "45"
+    volumes:
+      - vinted-bot-data:/data
+    ports:
+      - "127.0.0.1:8000:8000"
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Analyste Claude : reçoit les alertes de vinted-bot et envoie un verdict sur Telegram.
+  # Il n'ouvre aucun port sur ta machine : seul vinted-bot peut lui parler.
+  analyst:
+    build: ./analyst
+    container_name: vinted-analyst
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      TZ: Europe/Paris
+    volumes:
+      - analyst-data:/data
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  vinted-bot-data:
+  analyst-data:
