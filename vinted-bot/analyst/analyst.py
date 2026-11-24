@@ -287,8 +287,12 @@ def apply_rule(info: dict[str, Any], v: dict[str, Any]) -> dict[str, Any]:
 def render(info: dict[str, Any], v: dict[str, Any], cost: float) -> str:
     icon = {"ACHETER": "✅", "OFFRE": "💬", "PASSER": "❌"}[v["verdict"]]
     head = v["verdict"]
-    if v["verdict"] == "OFFRE" and v["prix_max_annonce"] > 0:
-        head += f" à {v['prix_max_annonce']:.0f} € max"
+    if v["verdict"] == "OFFRE":
+        if v["prix_max_annonce"] >= info["price"]:
+            # Le prix convient : Claude veut une vérification (étiquette, photo) avant l'achat.
+            head = f"VÉRIFIER avant d'acheter · prix OK jusqu'à {v['prix_max_annonce']:.0f} €"
+        elif v["prix_max_annonce"] > 0:
+            head = f"OFFRE à {v['prix_max_annonce']:.0f} € max (demandé {info['price']:.0f} €)"
     seller = info["seller"] or {}
     lines = [
         f"{icon} <b>{head}</b> · confiance {v['confiance']}",
