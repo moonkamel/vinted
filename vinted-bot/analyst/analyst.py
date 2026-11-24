@@ -34,6 +34,9 @@ import ocr
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s analyst %(levelname)s %(message)s")
 log = logging.getLogger("analyst")
+# httpx écrit chaque URL appelée, y compris celles de Telegram qui contiennent le jeton du bot : on le fait taire.
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
 
 # --- Réglages (fichier .env) -------------------------------------------------
 
