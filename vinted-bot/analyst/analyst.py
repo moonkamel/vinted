@@ -354,10 +354,12 @@ def mentioned_defects(desc: str, words: list[str] | None = None) -> list[str]:
     """Défauts cités dans la description, en ignorant "pas de tache", "sans trou", "ni trou"…"""
     found = []
     for word in (RULES["mots_defauts"] if words is None else words):
-        for m in re.finditer(re.escape(word), desc):
+        whole = word.endswith("!")
+        pattern = (r"\b" + re.escape(word.rstrip("!")) + r"\b") if whole else re.escape(word)
+        for m in re.finditer(pattern, desc):
             before = desc[max(0, m.start() - 25):m.start()]
             if not re.search(r"\b(pas|sans|aucun|aucune|ni|zero|0)\b", before):
-                found.append(word.strip())
+                found.append(word.rstrip("!").strip())
                 break
     return found
 
