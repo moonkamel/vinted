@@ -62,7 +62,8 @@ DATA = Path(os.environ.get("DATA_DIR", "/data"))
 DATA.mkdir(parents=True, exist_ok=True)
 SYSTEM_PROMPT = (Path(__file__).with_name("reference.md")).read_text(encoding="utf-8")
 
-RULES = json.loads((Path(__file__).with_name("rules.json")).read_text(encoding="utf-8"))
+RULES_FILE = os.environ.get("RULES_FILE", "rules.json")
+RULES = json.loads((Path(__file__).with_name(RULES_FILE)).read_text(encoding="utf-8"))
 claude = anthropic.Anthropic() if MODE == "ia" else None  # lit ANTHROPIC_API_KEY
 vinted = VintedClient(VINTED_BASE_URL)
 jobs: queue.Queue[dict[str, Any]] = queue.Queue()
@@ -220,17 +221,19 @@ def download(url: str) -> tuple[str, str] | None:
 
 def read_labels(photos: list[str]) -> dict[str, Any]:
     """Lit le texte des étiquettes sur chaque photo et fusionne les indices trouvés."""
-    merged: dict[str, Any] = {"brands": [], "competitors": [], "photos_lues": 0}
+    merged: dict[str, Any] = {"brands": [], "competitors": [], "photos_lues": 0, "texte": ""}
     for url in photos:
         got = fetch(url)
         if not got:
             continue
         try:
-            f = ocr.facts(ocr.read_image(got[1]))
+            raw = ocr.read_image(got[1])
+            f = ocr.facts(raw)
         except Exception as exc:  # noqa: BLE001
             log.warning("OCR impossible sur une photo : %s", exc)
             continue
         merged["photos_lues"] += 1
+        merged["texte"] = (merged["texte"] + " " + re.sub(r"\s+", " ", ocr.norm(raw)))[:4000]
         for key in ("brands", "competitors"):
             merged[key] += [x for x in f.get(key, []) if x not in merged[key]]
         for key in ("made_in", "rn", "ref", "date"):
@@ -344,10 +347,10 @@ def has(text: str, group: str) -> bool:
     return False
 
 
-def mentioned_defects(desc: str) -> list[str]:
+def mentioned_defects(desc: str, words: list[str] | None = None) -> list[str]:
     """Défauts cités dans la description, en ignorant "pas de tache", "sans trou", "ni trou"…"""
     found = []
-    for word in RULES["mots_defauts"]:
+    for word in (RULES["mots_defauts"] if words is None else words):
         for m in re.finditer(re.escape(word), desc):
             before = desc[max(0, m.start() - 25):m.start()]
             if not re.search(r"\b(pas|sans|aucun|aucune|ni|zero|0)\b", before):
@@ -361,7 +364,19 @@ def rules_verdict(info: dict[str, Any]) -> dict[str, Any]:
     labels: dict[str, Any] = info.get("labels") or {}
     label_text = " ".join(labels.get("brands", []) + (["made in usa"] if labels.get("made_in") == "USA" else [])
                           + (["union made"] if labels.get("union_made") else []) + (["wip"] if labels.get("wip") else []))
+    label_text += " " + labels.get("texte", "")
     text = f"{title} {desc} {label_text}"
+    proof = RULES.get("libelle_preuve", "étiquette")
+    # Accessoire vendu seul (housse, notice, bouchon…) : le titre en parle sans parler de l'objet lui-même
+    acc = RULES.get("accessoires_titre", [])
+    if acc and any(has(title, a) for a in acc) and not any(has(title, o) for o in RULES.get("objet_principal", [])):
+        return {
+            "modele_identifie": "accessoire seul", "dans_les_niches": False, "authenticite": "doute",
+            "points_verifies": [], "signaux_alerte": ["le titre décrit un accessoire, pas l'objet lui-même"],
+            "photos_manquantes": [], "revente_realiste_eur": 0, "port_entrant_eur": 0,
+            "calcul_revente": "aucune référence", "verdict": "PASSER", "confiance": "faible",
+            "resume": "Accessoire vendu seul.", "message_vendeur": "", "titre_affine": "",
+        }
     # La marque du modèle (1er groupe) doit être dans le titre ou le champ marque, pas seulement
     # dans la description : sinon une liste de hashtags "Carhartt Patagonia TNF…" suffirait.
     model = next((m for m in RULES["modeles"]
@@ -384,7 +399,11 @@ def rules_verdict(info: dict[str, Any]) -> dict[str, Any]:
     if model and brand and model["tous"][0].split("|")[0] not in brand:
         flags.append(f"marque renseignée : {info['brand']}")
     model_brand = model["tous"][0].split("|")[0] if model else ""
-    for c in labels.get("competitors", []):
+    if panne := mentioned_defects(f"{title} {desc}", RULES.get("mots_panne", [])):
+        flags.append("fonctionnement douteux : " + ", ".join(panne))
+    if untested := mentioned_defects(f"{title} {desc}", RULES.get("mots_non_teste", [])):
+        flags.append("non testé : " + ", ".join(untested) + " (risque de panne)")
+    for c in (labels.get("competitors", []) if RULES.get("verifier_concurrents_ocr", True) else []):
         if c != model_brand:
             flags.append(f"étiquette d'une autre marque lue sur les photos : {c}")
     if model and "USA" in model["nom"] and labels.get("made_in") and labels["made_in"] != "USA":
@@ -418,25 +437,28 @@ def rules_verdict(info: dict[str, Any]) -> dict[str, Any]:
         how += f" × {RULES['decote_taille']} (taille peu demandée)"
     suspicious = any(f.startswith(("titre suspect", "mot suspect", "autre marque", "marque renseignée", "étiquette"))
                      for f in flags)
-    label_ok = model_brand in labels.get("brands", [])
+    ocr_text = labels.get("texte", "")
+    label_ok = model_brand in labels.get("brands", []) or (bool(ocr_text) and has(ocr_text, model["tous"][0]))
+    model_read = bool(ocr_text) and len(model["tous"]) > 1 and has(ocr_text, model["tous"][1])
     seen = [x for x in (labels.get("rn"), labels.get("made_in") and f"Made in {labels['made_in']}",
                         labels.get("union_made") and "Union Made", labels.get("date"),
                         labels.get("ref") and f"réf. {labels['ref']}") if x]
     checked = [f"modèle reconnu : {model['nom']}", f"état : {info['condition']}"]
     if label_ok:
-        checked.append("étiquette lue : " + (", ".join(seen) if seen else model_brand))
+        checked.append(f"{proof} lu(e) sur les photos : " + (", ".join(seen) if seen else model_brand)
+                       + (" + nom du modèle" if model_read else ""))
     return {
         "modele_identifie": model["nom"], "dans_les_niches": True,
         "authenticite": "doute" if suspicious else "probable",
         "points_verifies": checked,
         "signaux_alerte": flags,
-        "photos_manquantes": [] if label_ok else ["étiquette non lue sur les photos : vérifie-la toi-même"],
+        "photos_manquantes": [] if label_ok else [f"{proof} non lu(e) sur les photos : vérifie toi-même"],
         "revente_realiste_eur": round(resale, 2), "port_entrant_eur": model["port"], "calcul_revente": how,
         "verdict": "ACHETER" if not flags else "OFFRE",
         # élevée seulement si l'étiquette de la marque a été lue sur une photo
         "confiance": "faible" if flags else ("elevee" if label_ok else "moyenne"),
-        "resume": ("Étiquette lue et aucun signal d'alerte." if label_ok else
-                   "Aucun signal d'alerte dans le texte, mais l'étiquette n'a pas pu être lue.") if not flags
+        "resume": (f"{proof.capitalize()} lu(e) sur les photos et aucun signal d'alerte." if label_ok else
+                   f"Aucun signal d'alerte dans le texte, mais {proof} n'a pas pu être lu(e).") if not flags
                   else "Signaux d'alerte à vérifier avant tout achat.",
         "message_vendeur": "",
         "titre_affine": refined_title(model["nom"], info, labels),
