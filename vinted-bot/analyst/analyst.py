@@ -38,7 +38,10 @@ TELEGRAM_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
 CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
 MODEL = os.environ.get("CLAUDE_MODEL", "claude-opus-5-5")
 EFFORT = os.environ.get("CLAUDE_EFFORT", "medium")
-NOTIFY = os.environ.get("NOTIFY", "deals").lower()  # "deals" = ACHETER/OFFRE seulement, "all" = tout
+# "buy" = seulement les achats immédiats sûrs ; "deals" = ACHETER et OFFRE ; "all" = tout
+NOTIFY = os.environ.get("NOTIFY", "buy").lower()
+MIN_CONFIDENCE = os.environ.get("MIN_CONFIDENCE", "elevee").lower()  # pour NOTIFY=buy : moyenne ou elevee
+CONFIDENCE_RANK = {"faible": 0, "moyenne": 1, "elevee": 2}
 MAX_PHOTOS = int(os.environ.get("MAX_PHOTOS", "5"))
 VINTED_BASE_URL = os.environ.get("VINTED_BASE_URL", "https://www.vinted.fr")
 WEBHOOK_SECRET = os.environ.get("WEBHOOK_SECRET", "")
@@ -332,6 +335,16 @@ def journal(info: dict[str, Any], v: dict[str, Any], cost: float) -> None:
                     f"{v['marge_pct']:.0f}", f"{cost:.4f}", info["url"]])
 
 
+def should_notify(v: dict[str, Any]) -> bool:
+    if NOTIFY == "all":
+        return True
+    if NOTIFY == "deals":
+        return v["verdict"] != "PASSER"
+    # "buy" : à acheter tout de suite, sans aucun doute
+    return (v["verdict"] == "ACHETER" and v["regle_ok"] and v["authenticite"] == "probable"
+            and CONFIDENCE_RANK.get(v["confiance"], 0) >= CONFIDENCE_RANK.get(MIN_CONFIDENCE, 2))
+
+
 def worker() -> None:
     while True:
         job = jobs.get()
@@ -348,7 +361,7 @@ def worker() -> None:
             verdict = apply_rule(info, verdict)
             journal(info, verdict, cost)
             log.info("%s · %s · marge %.0f € · %.3f $", verdict["verdict"], info["title"], verdict["marge"], cost)
-            if job["manual"] or NOTIFY == "all" or verdict["verdict"] != "PASSER":
+            if job["manual"] or should_notify(verdict):
                 send(render(info, verdict, cost))
         except anthropic.AuthenticationError:
             send("⛔ Clé API Claude refusée : vérifie ANTHROPIC_API_KEY dans le fichier .env.")

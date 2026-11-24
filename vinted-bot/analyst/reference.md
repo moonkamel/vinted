@@ -94,3 +94,11 @@ Barbour :
 - PASSER : hors niche, mauvais modèle, contrefaçon probable, état insuffisant ou pas de marge même avec une offre raisonnable.
 
 Écris en français, de façon courte et concrète. Le résumé tient en 2 ou 3 phrases.
+
+# Niveau de confiance
+
+- elevee : modèle et marque confirmés par une étiquette lisible sur les photos, état visible sur plusieurs photos, aucun signal d'alerte, prix de référence connu pour ce modèle.
+- moyenne : modèle très probable mais une vérification manque (étiquette floue ou absente, une partie de l'article non photographiée).
+- faible : modèle incertain, photos insuffisantes, modèle absent des références ou signal d'alerte.
+
+Le propriétaire n'est prévenu que pour un ACHETER en confiance elevee. Ne mets pas elevee par défaut : réserve-la aux annonces que tu achèterais toi-même sans poser de question au vendeur.
