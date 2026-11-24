@@ -58,7 +58,18 @@
    "port": 4.5
   },
   {
-   "nom": "Patagonia Retro-X",
+   "nom": "Patagonia Retro-X gilet (sans manches)",
+   "tous": [
+    "patagonia",
+    "retro-x|retro x|retrox",
+    "vest|gilet|sans manche"
+   ],
+   "aucun": [],
+   "p25": 69,
+   "port": 4.5
+  },
+  {
+   "nom": "Patagonia Retro-X veste",
    "tous": [
     "patagonia",
     "retro-x|retro x|retrox"

@@ -23,7 +23,8 @@ Ce sont des prix DEMANDÉS d'annonces d'occasion, protection acheteur comprise (
 | Carhartt Active Jacket | 116 € | 130 € | |
 | Carhartt Double Knee (denim ou duck) | 32 € | 37-42 € | Peu de données en W36 et plus. |
 | Patagonia Synchilla | 45 € | 52 € | |
-| Patagonia Retro-X | 85 € | 116 € | Inclut des gilets et des modèles femme. |
+| Patagonia Retro-X veste | 85 € | 116 € | |
+| Patagonia Retro-X gilet (vest, sans manches) | 69 € | 116 € | Très dispersé (P10 52 €, P75 153 €) selon coloris et époque. |
 | Patagonia Re-Tool Snap-T (souvent confondue avec Synchilla ou Retro-X) | 41 € | 43 € | Marché saturé, beaucoup de pros. |
 | Levi's Made in USA (vrais, filtrés) | ~28 € | ~32 € | |
 | Levi's 501 W32 classique (pas USA) | ~14 € | ~16 € | Pas de marge à ces prix. |
