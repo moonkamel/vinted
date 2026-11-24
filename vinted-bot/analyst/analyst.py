@@ -18,6 +18,7 @@ import os
 import queue
 import re
 import threading
+import unicodedata
 import time
 from datetime import datetime
 from html import escape
@@ -36,6 +37,8 @@ log = logging.getLogger("analyst")
 
 TELEGRAM_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
 CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
+# "ia" = analyse par Claude (photos comprises, payante) ; "regles" = règles fixes, sans IA, gratuite
+MODE = os.environ.get("MODE", "ia").lower()
 MODEL = os.environ.get("CLAUDE_MODEL", "claude-opus-5-5")
 EFFORT = os.environ.get("CLAUDE_EFFORT", "medium")
 # "buy" = seulement les achats immédiats sûrs ; "deals" = ACHETER et OFFRE ; "all" = tout
@@ -55,7 +58,8 @@ DATA = Path(os.environ.get("DATA_DIR", "/data"))
 DATA.mkdir(parents=True, exist_ok=True)
 SYSTEM_PROMPT = (Path(__file__).with_name("reference.md")).read_text(encoding="utf-8")
 
-claude = anthropic.Anthropic()  # lit ANTHROPIC_API_KEY
+RULES = json.loads((Path(__file__).with_name("rules.json")).read_text(encoding="utf-8"))
+claude = anthropic.Anthropic() if MODE == "ia" else None  # lit ANTHROPIC_API_KEY
 vinted = VintedClient(VINTED_BASE_URL)
 jobs: queue.Queue[dict[str, Any]] = queue.Queue()
 seen_lock = threading.Lock()
@@ -271,6 +275,93 @@ def ask_claude(info: dict[str, Any]) -> tuple[dict[str, Any], float]:
     return json.loads(text), cost
 
 
+# --- Mode règles (sans IA) ---------------------------------------------------
+
+def norm(text: str) -> str:
+    """Minuscules, sans accents, pour comparer des mots."""
+    return unicodedata.normalize("NFKD", str(text or "")).encode("ascii", "ignore").decode().lower()
+
+
+def has(text: str, group: str) -> bool:
+    """Un des mots du groupe "a|b" est présent. Mots courts (usa, wip, lee) : mot entier seulement."""
+    for alt in (a.strip() for a in group.split("|")):
+        if alt and re.search(rf"\b{re.escape(alt)}" + (r"\b" if len(alt) <= 3 else ""), text):
+            return True
+    return False
+
+
+def mentioned_defects(desc: str) -> list[str]:
+    """Défauts cités dans la description, en ignorant "pas de tache", "sans trou", "ni trou"…"""
+    found = []
+    for word in RULES["mots_defauts"]:
+        for m in re.finditer(re.escape(word), desc):
+            before = desc[max(0, m.start() - 25):m.start()]
+            if not re.search(r"\b(pas|sans|aucun|aucune|ni|zero|0)\b", before):
+                found.append(word.strip())
+                break
+    return found
+
+
+def rules_verdict(info: dict[str, Any]) -> dict[str, Any]:
+    title, desc, brand = norm(info["title"]), norm(info["description"]), norm(info["brand"])
+    text = f"{title} {desc}"
+    model = next((m for m in RULES["modeles"]
+                  if all(has(text, g) for g in m["tous"]) and not any(has(text, w) for w in m["aucun"])), None)
+    flags: list[str] = []
+    seller = info["seller"] or {}
+    reviews = seller.get("reviews") or 0
+    if seller.get("business") or seller.get("business_seller") or reviews >= RULES["vendeur_pro_avis"]:
+        flags.append(f"vendeur professionnel ou en volume ({reviews} avis) : prix déjà au marché")
+    for w in RULES["mots_suspects_titre"]:
+        if w in f"{title} ":
+            flags.append(f"titre suspect : « {w.strip()} »")
+    for w in RULES["mots_suspects"]:
+        if w in text:
+            flags.append(f"mot suspect : « {w} »")
+    for c in RULES["concurrents"]:
+        if re.search(rf"\b{re.escape(c)}\b", f"{brand} {title}"):
+            flags.append(f"autre marque : {c}")
+    if model and brand and model["tous"][0].split("|")[0] not in brand:
+        flags.append(f"marque renseignée : {info['brand']}")
+    if defects := mentioned_defects(desc):
+        flags.append("défaut mentionné : " + ", ".join(defects))
+    cond = norm(info["condition"])
+    if model and "USA" in model["nom"] and cond.startswith("neuf"):
+        flags.append("« neuf » sur un modèle vintage : à vérifier")
+    if not model:
+        return {
+            "modele_identifie": "modèle non reconnu par les règles", "dans_les_niches": False,
+            "authenticite": "doute", "points_verifies": [], "signaux_alerte": flags, "photos_manquantes": [],
+            "revente_realiste_eur": 0, "port_entrant_eur": 0, "calcul_revente": "aucune référence",
+            "verdict": "PASSER", "confiance": "faible",
+            "resume": "Aucun modèle de rules.json ne correspond au titre ni à la description.", "message_vendeur": "",
+        }
+    resale = model.get("revente") or ((model["p25"] - 0.70) / 1.05) * 0.83
+    how = (f"vente connue {model['revente']} €" if model.get("revente")
+           else f"P25 {model['p25']} € → ((P25 − 0,70) ÷ 1,05) × 0,83")
+    factor = next((f for k, f in RULES["etat"].items() if cond.startswith(k)), 1.0)
+    if factor < 1:
+        resale *= factor
+        how += f" × {factor} (état)"
+    if any(re.search(rf"\b{re.escape(s)}\b", norm(info["size"])) for s in RULES["tailles_peu_demandees"]):
+        resale *= RULES["decote_taille"]
+        how += f" × {RULES['decote_taille']} (taille peu demandée)"
+    suspicious = any(f.startswith(("titre suspect", "mot suspect", "autre marque", "marque renseignée")) for f in flags)
+    return {
+        "modele_identifie": model["nom"], "dans_les_niches": True,
+        "authenticite": "doute" if suspicious else "probable",
+        "points_verifies": [f"modèle reconnu : {model['nom']}", f"état : {info['condition']}"],
+        "signaux_alerte": flags,
+        "photos_manquantes": ["photos non analysées en mode règles : vérifie toi-même étiquette et état"],
+        "revente_realiste_eur": round(resale, 2), "port_entrant_eur": model["port"], "calcul_revente": how,
+        "verdict": "ACHETER" if not flags else "OFFRE",
+        "confiance": "elevee" if not flags else "faible",
+        "resume": "Aucun signal d'alerte détecté dans le texte de l'annonce." if not flags
+                  else "Signaux d'alerte à vérifier avant tout achat.",
+        "message_vendeur": "",
+    }
+
+
 def apply_rule(info: dict[str, Any], v: dict[str, Any]) -> dict[str, Any]:
     """Calcule la marge et applique la règle d'achat, quel que soit l'avis de Claude."""
     resale, port = float(v["revente_realiste_eur"]), float(v["port_entrant_eur"])
@@ -319,7 +410,7 @@ def render(info: dict[str, Any], v: dict[str, Any], cost: float) -> str:
     if v["message_vendeur"]:
         lines.append(f"✉️ <code>{escape(v['message_vendeur'])}</code>")
     lines.append(f"\n{escape(info['url'])}")
-    lines.append(f"<i>analyse {MODEL} ≈ {cost:.3f} $</i>")
+    lines.append("<i>analyse par règles (gratuite)</i>" if MODE == "regles" else f"<i>analyse {MODEL} ≈ {cost:.3f} $</i>")
     return "\n".join(lines)
 
 
@@ -357,7 +448,10 @@ def worker() -> None:
             if info.get("reserved") and not job["manual"]:
                 log.info("annonce déjà réservée, ignorée : %s", info["url"])
                 continue
-            verdict, cost = ask_claude(info)
+            if MODE == "regles":
+                verdict, cost = rules_verdict(info), 0.0
+            else:
+                verdict, cost = ask_claude(info)
             verdict = apply_rule(info, verdict)
             journal(info, verdict, cost)
             log.info("%s · %s · marge %.0f € · %.3f $", verdict["verdict"], info["title"], verdict["marge"], cost)
@@ -378,7 +472,7 @@ def worker() -> None:
 def main() -> None:
     threading.Thread(target=telegram_loop, daemon=True).start()
     threading.Thread(target=worker, daemon=True).start()
-    log.info("Analyste prêt (modèle %s, effort %s, notifications : %s).", MODEL, EFFORT, NOTIFY)
+    log.info("Analyste prêt (mode %s, modèle %s, notifications : %s).", MODE, MODEL if MODE == "ia" else "-", NOTIFY)
     ThreadingHTTPServer(("0.0.0.0", 8080), Hook).serve_forever()
 
 

@@ -1,0 +1,170 @@
+{
+ "_aide": "Modèles reconnus en mode règles, du plus précis au plus général : le premier qui correspond gagne. 'tous' = chaque groupe doit apparaître dans le titre ou la description (un groupe 'a|b' = a OU b). 'aucun' = mots qui écartent le modèle. p25 = prix demandé P25 sur Vinted, protection comprise. 'revente' (facultatif) remplace la formule par un prix de vente connu. port = port entrant estimé.",
+ "modeles": [
+  {
+   "nom": "Carhartt Detroit US (Made in USA)",
+   "tous": [
+    "carhartt",
+    "detroit",
+    "made in usa|usa|j97|union made|ufcw"
+   ],
+   "aucun": [
+    "wip"
+   ],
+   "p25": 179,
+   "revente": 130,
+   "port": 7
+  },
+  {
+   "nom": "Carhartt Detroit (WIP ou non précisée)",
+   "tous": [
+    "carhartt",
+    "detroit"
+   ],
+   "aucun": [],
+   "p25": 115,
+   "port": 7
+  },
+  {
+   "nom": "Carhartt Active Jacket",
+   "tous": [
+    "carhartt",
+    "active"
+   ],
+   "aucun": [],
+   "p25": 116,
+   "port": 7
+  },
+  {
+   "nom": "Carhartt Double Knee",
+   "tous": [
+    "carhartt",
+    "double knee|double-knee|doubleknee"
+   ],
+   "aucun": [
+    "short"
+   ],
+   "p25": 32,
+   "port": 4.5
+  },
+  {
+   "nom": "Patagonia Re-Tool / Los Gatos (peluche)",
+   "tous": [
+    "patagonia",
+    "re-tool|retool|re tool|los gatos"
+   ],
+   "aucun": [],
+   "p25": 39,
+   "port": 4.5
+  },
+  {
+   "nom": "Patagonia Retro-X",
+   "tous": [
+    "patagonia",
+    "retro-x|retro x|retrox"
+   ],
+   "aucun": [],
+   "p25": 85,
+   "port": 4.5
+  },
+  {
+   "nom": "Patagonia Synchilla",
+   "tous": [
+    "patagonia",
+    "synchilla"
+   ],
+   "aucun": [],
+   "p25": 45,
+   "port": 4.5
+  },
+  {
+   "nom": "Levi's Made in USA (501/505/550)",
+   "tous": [
+    "levi",
+    "made in usa|usa",
+    "501|505|550"
+   ],
+   "aucun": [
+    "510",
+    "511",
+    "skinny"
+   ],
+   "p25": 28,
+   "port": 4.5
+  },
+  {
+   "nom": "Le Laboureur (veste)",
+   "tous": [
+    "laboureur",
+    "veste|jacket|bleu de travail|moleskine"
+   ],
+   "aucun": [
+    "pantalon",
+    "salopette"
+   ],
+   "p25": 116,
+   "port": 7
+  },
+  {
+   "nom": "Barbour cirée (Bedale/Beaufort/Border)",
+   "tous": [
+    "barbour",
+    "bedale|beaufort|border|ciree|cire|wax"
+   ],
+   "aucun": [
+    "gilet",
+    "polaire",
+    "doudoune"
+   ],
+   "p25": 116,
+   "port": 8
+  }
+ ],
+ "etat": {
+  "neuf avec etiquette": 1.0,
+  "neuf sans etiquette": 1.0,
+  "tres bon etat": 1.0,
+  "bon etat": 0.9,
+  "satisfaisant": 0.75
+ },
+ "tailles_peu_demandees": [
+  "xxs",
+  "xs",
+  "4xl",
+  "5xl",
+  "enfant",
+  "ans"
+ ],
+ "decote_taille": 0.85,
+ "vendeur_pro_avis": 1000,
+ "mots_suspects": [
+  "replica",
+  "copie",
+  "fake",
+  "reproduction",
+  "similaire"
+ ],
+ "mots_defauts": [
+  "trou",
+  "dechir",
+  "tache",
+  "accroc",
+  "decousu",
+  "reparation",
+  "reprise",
+  "abime",
+  "use "
+ ],
+ "concurrents": [
+  "berne",
+  "dickies",
+  "wrangler",
+  "lee"
+ ],
+ "mots_suspects_titre": [
+  "type ",
+  "style ",
+  "facon ",
+  "inspire"
+ ]
+}
