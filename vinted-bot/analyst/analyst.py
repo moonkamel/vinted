@@ -283,9 +283,12 @@ def norm(text: str) -> str:
 
 
 def has(text: str, group: str) -> bool:
-    """Un des mots du groupe "a|b" est présent. Mots courts (usa, wip, lee) : mot entier seulement."""
+    """Un des mots du groupe "a|b" est présent (début de mot : "levi" trouve "levis").
+    Mot entier seulement pour les mots courts (usa, wip, lee) et ceux qui finissent par "!" ("vest!")."""
     for alt in (a.strip() for a in group.split("|")):
-        if alt and re.search(rf"\b{re.escape(alt)}" + (r"\b" if len(alt) <= 3 else ""), text):
+        whole = alt.endswith("!") or len(alt) <= 3
+        alt = alt.rstrip("!")
+        if alt and re.search(rf"\b{re.escape(alt)}" + (r"\b" if whole else ""), text):
             return True
     return False
 

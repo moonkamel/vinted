@@ -1,5 +1,5 @@
 {
- "_aide": "Modèles reconnus en mode règles, du plus précis au plus général : le premier qui correspond gagne. 'tous' = chaque groupe doit apparaître dans le titre ou la description (un groupe 'a|b' = a OU b). 'aucun' = mots qui écartent le modèle. p25 = prix demandé P25 sur Vinted, protection comprise. 'revente' (facultatif) remplace la formule par un prix de vente connu. port = port entrant estimé.",
+ "_aide": "Modèles reconnus en mode règles, du plus précis au plus général : le premier qui correspond gagne. 'tous' = chaque groupe doit apparaître dans le titre ou la description (un groupe 'a|b' = a OU b). 'aucun' = mots qui écartent le modèle. p25 = prix demandé P25 sur Vinted, protection comprise. 'revente' (facultatif) remplace la formule par un prix de vente connu. port = port entrant estimé. Un mot qui finit par '!' doit apparaître en mot entier (ex. 'vest!' ne trouve pas 'veste').",
  "modeles": [
   {
    "nom": "Carhartt Detroit US (Made in USA)",
@@ -62,7 +62,7 @@
    "tous": [
     "patagonia",
     "retro-x|retro x|retrox",
-    "vest|gilet|sans manche"
+    "vest!|vests!|gilet|sans manche"
    ],
    "aucun": [],
    "p25": 69,
