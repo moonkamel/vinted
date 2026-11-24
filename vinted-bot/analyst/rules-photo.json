@@ -1,7 +1,240 @@
 {
- "_aide": "Règles appareils photo argentiques (nov. 2026). Modèles du plus précis au plus général : le premier qui correspond gagne. 'tous' = chaque groupe doit apparaître (titre, description ou texte lu sur les photos ; la marque doit être dans le titre, le champ marque ou sur les photos). Un groupe 'a|b' = a OU b. Un mot qui finit par '!' doit apparaître en mot entier. p25 = prix demandé P25 sur vinted.fr, protection comprise, accessoires et appareils en panne exclus. port = port entrant estimé.",
+ "_aide": "Règles appareils photo argentiques (nov. 2026). Modèles du plus précis au plus général : le premier qui correspond gagne. 'tous' = chaque groupe doit apparaître (titre, description ou texte lu sur les photos ; la marque doit être dans le titre, le champ marque ou sur les photos). Un groupe 'a|b' = a OU b. Un mot qui finit par '!' doit apparaître en mot entier. p25 = prix demandé P25 sur vinted.fr, protection comprise, accessoires et appareils en panne exclus. port = port entrant estimé. Les modèles marqués 💎 sont des objets rares (sleepers) : leur 'revente' est une estimation prudente faite sur très peu d'annonces Vinted (vérifie les ventes eBay avant d'acheter).",
  "libelle_preuve": "marquage de l'appareil",
  "modeles": [
+  {
+   "nom": "💎 Contax T3",
+   "tous": [
+    "contax|carl zeiss",
+    "t3!"
+   ],
+   "aucun": [
+    "numerique",
+    "digital",
+    "mp",
+    "megapixel",
+    "mpx",
+    "pixels",
+    "yashica"
+   ],
+   "revente": 1500,
+   "port": 6,
+   "p25": 1500
+  },
+  {
+   "nom": "💎 Contax T2",
+   "tous": [
+    "contax|carl zeiss",
+    "t2!"
+   ],
+   "aucun": [
+    "numerique",
+    "digital",
+    "mp",
+    "megapixel",
+    "mpx",
+    "pixels",
+    "yashica"
+   ],
+   "revente": 800,
+   "port": 6,
+   "p25": 800
+  },
+  {
+   "nom": "💎 Minolta TC-1",
+   "tous": [
+    "minolta",
+    "tc-1!|tc1!|tc 1!"
+   ],
+   "aucun": [
+    "numerique",
+    "digital",
+    "mp",
+    "megapixel",
+    "mpx",
+    "pixels"
+   ],
+   "revente": 900,
+   "port": 6,
+   "p25": 900
+  },
+  {
+   "nom": "💎 Nikon 28Ti / 35Ti",
+   "tous": [
+    "nikon",
+    "28ti|35ti|28 ti!|35 ti!"
+   ],
+   "aucun": [
+    "numerique",
+    "digital",
+    "mp",
+    "megapixel",
+    "mpx",
+    "pixels"
+   ],
+   "revente": 450,
+   "port": 6,
+   "p25": 450
+  },
+  {
+   "nom": "💎 Ricoh GR1 / GR1s / GR1v",
+   "tous": [
+    "ricoh",
+    "gr1|gr-1|gr 1!|gr1s|gr1v"
+   ],
+   "aucun": [
+    "numerique",
+    "digital",
+    "mp",
+    "megapixel",
+    "mpx",
+    "pixels"
+   ],
+   "revente": 450,
+   "port": 6,
+   "p25": 450
+  },
+  {
+   "nom": "💎 Konica Hexar AF",
+   "tous": [
+    "konica",
+    "hexar"
+   ],
+   "aucun": [
+    "ar!",
+    "135mm",
+    "objectif",
+    "lens",
+    "numerique",
+    "digital",
+    "mp",
+    "megapixel",
+    "mpx",
+    "pixels"
+   ],
+   "revente": 350,
+   "port": 6,
+   "p25": 350
+  },
+  {
+   "nom": "💎 Rolleiflex (bi-objectif)",
+   "tous": [
+    "rolleiflex|rollei",
+    "rolleiflex|2.8|3.5|tlr|bi-objectif|biobjectif"
+   ],
+   "aucun": [
+    "numerique",
+    "digital",
+    "mp",
+    "megapixel",
+    "mpx",
+    "pixels"
+   ],
+   "revente": 250,
+   "port": 8,
+   "p25": 250
+  },
+  {
+   "nom": "💎 Hasselblad 500",
+   "tous": [
+    "hasselblad",
+    "500c|500 c|500cm|503|501"
+   ],
+   "aucun": [
+    "numerique",
+    "digital",
+    "mp",
+    "megapixel",
+    "mpx",
+    "pixels"
+   ],
+   "revente": 600,
+   "port": 8,
+   "p25": 600
+  },
+  {
+   "nom": "💎 Sony Walkman WM-D6C",
+   "tous": [
+    "sony|walkman",
+    "wm-d6c|d6c|wmd6c"
+   ],
+   "aucun": [
+    "clone",
+    "replica",
+    "copie",
+    "reproduction",
+    "style",
+    "type"
+   ],
+   "revente": 350,
+   "port": 6,
+   "p25": 350
+  },
+  {
+   "nom": "💎 Sony Walkman TPS-L2",
+   "tous": [
+    "sony|walkman",
+    "tps-l2|tpsl2|tps l2"
+   ],
+   "aucun": [
+    "clone",
+    "replica",
+    "copie",
+    "reproduction",
+    "style",
+    "type"
+   ],
+   "revente": 300,
+   "port": 6,
+   "p25": 300
+  },
+  {
+   "nom": "💎 Roland Juno (6/60/106)",
+   "tous": [
+    "roland",
+    "juno"
+   ],
+   "aucun": [
+    "clone",
+    "replica",
+    "copie",
+    "reproduction",
+    "style",
+    "type",
+    "cap",
+    "slider",
+    "manuel",
+    "manual",
+    "notice",
+    "stand",
+    "housse"
+   ],
+   "revente": 550,
+   "port": 15,
+   "p25": 550
+  },
+  {
+   "nom": "💎 Roland TR (606/707/808/909)",
+   "tous": [
+    "roland",
+    "tr-606|tr-707|tr-808|tr-909|tr606|tr707|tr808|tr909"
+   ],
+   "aucun": [
+    "clone",
+    "replica",
+    "copie",
+    "reproduction",
+    "style",
+    "type",
+    "behringer",
+    "clone",
+    "manuel",
+    "manual"
+   ],
+   "revente": 600,
+   "port": 15,
+   "p25": 600
+  },
   {
    "nom": "Olympus mju II (µ[mju:] II)",
    "tous": [
@@ -245,7 +478,15 @@
   "reflex",
   "argentique",
   "analog",
-  "compact"
+  "compact",
+  "walkman",
+  "baladeur",
+  "lecteur",
+  "synthetiseur",
+  "synthe",
+  "clavier",
+  "boite a rythmes",
+  "drum machine"
  ],
  "mots_panne": [
   "pour pieces",
@@ -256,7 +497,7 @@
   "ne marche",
   "defectueu",
   "bloque",
-  "casse",
+  "casse!",
   "for parts",
   "broken",
   "kaputt",
