@@ -395,9 +395,9 @@ def render(info: dict[str, Any], v: dict[str, Any], cost: float) -> str:
         f"💶 {info['price']:.2f} € ({info['total_price']:.2f} € tout compris) · vendeur "
         f"{escape(str(seller.get('username') or seller.get('login') or '?'))} "
         f"{seller.get('rating_stars') or seller.get('stars') or '?'}★ ({seller.get('reviews', '?')} avis)",
-        f"📈 Revente ~{v['revente_realiste_eur']:.0f} € · coût ~{v['cout']:.0f} € → "
-        f"<b>marge {v['marge']:+.0f} € ({v['marge_pct']:.0f} %)</b>",
-        f"<i>{escape(v['calcul_revente'])}</i>",
+        (f"📈 Revente ~{v['revente_realiste_eur']:.0f} € · coût ~{v['cout']:.0f} € → "
+         f"<b>marge {v['marge']:+.0f} € ({v['marge_pct']:.0f} %)</b>\n<i>{escape(v['calcul_revente'])}</i>")
+        if v["revente_realiste_eur"] > 0 else "📈 Pas de référence pour ce modèle : marge non calculée",
         "",
         escape(v["resume"]),
     ]
