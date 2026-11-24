@@ -305,8 +305,11 @@ def mentioned_defects(desc: str) -> list[str]:
 def rules_verdict(info: dict[str, Any]) -> dict[str, Any]:
     title, desc, brand = norm(info["title"]), norm(info["description"]), norm(info["brand"])
     text = f"{title} {desc}"
+    # La marque du modèle (1er groupe) doit être dans le titre ou le champ marque, pas seulement
+    # dans la description : sinon une liste de hashtags "Carhartt Patagonia TNF…" suffirait.
     model = next((m for m in RULES["modeles"]
-                  if all(has(text, g) for g in m["tous"]) and not any(has(text, w) for w in m["aucun"])), None)
+                  if has(f"{title} {brand}", m["tous"][0]) and all(has(text, g) for g in m["tous"][1:])
+                  and not any(has(text, w) for w in m["aucun"])), None)
     flags: list[str] = []
     seller = info["seller"] or {}
     reviews = seller.get("reviews") or 0
@@ -323,6 +326,9 @@ def rules_verdict(info: dict[str, Any]) -> dict[str, Any]:
             flags.append(f"autre marque : {c}")
     if model and brand and model["tous"][0].split("|")[0] not in brand:
         flags.append(f"marque renseignée : {info['brand']}")
+    cited = [b for b in RULES["marques_courantes"] if has(desc, b)]
+    if len(cited) >= 4:
+        flags.append(f"description bourrée de marques ({', '.join(cited[:5])}…) : annonce peu fiable")
     if defects := mentioned_defects(desc):
         flags.append("défaut mentionné : " + ", ".join(defects))
     cond = norm(info["condition"])
