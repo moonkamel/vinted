@@ -1,0 +1,318 @@
+{
+ "_aide": "Règles appareils photo argentiques (nov. 2026). Modèles du plus précis au plus général : le premier qui correspond gagne. 'tous' = chaque groupe doit apparaître (titre, description ou texte lu sur les photos ; la marque doit être dans le titre, le champ marque ou sur les photos). Un groupe 'a|b' = a OU b. Un mot qui finit par '!' doit apparaître en mot entier. p25 = prix demandé P25 sur vinted.fr, protection comprise, accessoires et appareils en panne exclus. port = port entrant estimé.",
+ "libelle_preuve": "marquage de l'appareil",
+ "modeles": [
+  {
+   "nom": "Olympus mju II (µ[mju:] II)",
+   "tous": [
+    "olympus",
+    "mju|µ|mju-ii|mjuii",
+    "ii!|2!|mju-ii|mjuii"
+   ],
+   "aucun": [
+    "zoom",
+    "numerique",
+    "digital",
+    "mp",
+    "megapixel",
+    "mpx",
+    "pixels"
+   ],
+   "p25": 232,
+   "port": 5
+  },
+  {
+   "nom": "Olympus mju Zoom",
+   "tous": [
+    "olympus",
+    "mju|µ",
+    "zoom"
+   ],
+   "aucun": [
+    "numerique",
+    "digital",
+    "mp",
+    "megapixel",
+    "mpx",
+    "pixels"
+   ],
+   "p25": 74,
+   "port": 5
+  },
+  {
+   "nom": "Olympus mju I",
+   "tous": [
+    "olympus",
+    "mju|µ"
+   ],
+   "aucun": [
+    "zoom",
+    "numerique",
+    "digital",
+    "mp",
+    "megapixel",
+    "mpx",
+    "pixels"
+   ],
+   "p25": 110,
+   "port": 5
+  },
+  {
+   "nom": "Yashica T4",
+   "tous": [
+    "yashica",
+    "t4!"
+   ],
+   "aucun": [
+    "numerique",
+    "digital",
+    "mp",
+    "megapixel",
+    "mpx",
+    "pixels"
+   ],
+   "p25": 368,
+   "port": 5
+  },
+  {
+   "nom": "Konica Big Mini",
+   "tous": [
+    "konica",
+    "big mini|bigmini"
+   ],
+   "aucun": [
+    "numerique",
+    "digital",
+    "mp",
+    "megapixel",
+    "mpx",
+    "pixels"
+   ],
+   "p25": 43,
+   "port": 5
+  },
+  {
+   "nom": "Canon AE-1 Program",
+   "tous": [
+    "canon",
+    "ae-1|ae1!|ae 1!",
+    "program"
+   ],
+   "aucun": [],
+   "p25": 157,
+   "port": 6.5
+  },
+  {
+   "nom": "Canon AE-1",
+   "tous": [
+    "canon",
+    "ae-1!|ae1!|ae 1!"
+   ],
+   "aucun": [
+    "program"
+   ],
+   "p25": 95,
+   "port": 6.5
+  },
+  {
+   "nom": "Pentax K1000",
+   "tous": [
+    "pentax",
+    "k1000|k 1000|k-1000"
+   ],
+   "aucun": [],
+   "p25": 127,
+   "port": 6.5
+  },
+  {
+   "nom": "Nikon FM2",
+   "tous": [
+    "nikon",
+    "fm2!|fm-2!|fm 2!|fm2n!"
+   ],
+   "aucun": [],
+   "p25": 242,
+   "port": 6.5
+  },
+  {
+   "nom": "Minolta X-700",
+   "tous": [
+    "minolta",
+    "x-700|x700|x 700"
+   ],
+   "aucun": [],
+   "p25": 106,
+   "port": 6.5
+  },
+  {
+   "nom": "Olympus OM-1",
+   "tous": [
+    "olympus",
+    "om-1!|om1!|om-1n!|om1n!|om 1!|om-1md!"
+   ],
+   "aucun": [],
+   "p25": 158,
+   "port": 6.5
+  },
+  {
+   "nom": "Olympus OM-10",
+   "tous": [
+    "olympus",
+    "om-10!|om10!|om 10!"
+   ],
+   "aucun": [],
+   "p25": 58,
+   "port": 6.5
+  }
+ ],
+ "etat": {
+  "neuf avec etiquette": 1.0,
+  "neuf sans etiquette": 1.0,
+  "tres bon etat": 1.0,
+  "bon etat": 0.9,
+  "satisfaisant": 0.7
+ },
+ "tailles_peu_demandees": [],
+ "decote_taille": 1.0,
+ "vendeur_pro_avis": 1000,
+ "accessoires_titre": [
+  "mode d'emploi",
+  "mode d emploi",
+  "notice",
+  "manuel",
+  "manual",
+  "libretto",
+  "istruzioni",
+  "handleiding",
+  "anleitung",
+  "bedienungsanleitung",
+  "brochure",
+  "catalogue",
+  "prospekt",
+  "livre",
+  "book",
+  "magazine",
+  "revista",
+  "housse",
+  "etui",
+  "sacoche",
+  "sangle",
+  "courroie",
+  "strap",
+  "correa",
+  "bouchon",
+  "cache objectif",
+  "pare-soleil",
+  "filtre",
+  "flash",
+  "winder",
+  "motor drive",
+  "grip",
+  "data back",
+  "doubleur",
+  "oeilleton",
+  "objectif",
+  "obiettivo",
+  "objektiv",
+  "lens",
+  "teleobjectif",
+  "pellicule",
+  "rullino",
+  "pin's",
+  "pins",
+  "carte",
+  "cards",
+  "boite",
+  "scatola",
+  "box",
+  "ricambio",
+  "ricambi",
+  "spare",
+  "pieces detachees",
+  "adaptateur",
+  "adapter",
+  "bague"
+ ],
+ "objet_principal": [
+  "appareil",
+  "boitier",
+  "body",
+  "camera",
+  "camara",
+  "kamera",
+  "fotocamera",
+  "macchina",
+  "reflex",
+  "argentique",
+  "analog",
+  "compact"
+ ],
+ "mots_panne": [
+  "pour pieces",
+  "pour piece",
+  "hs!",
+  "en panne",
+  "ne fonctionne",
+  "ne marche",
+  "defectueu",
+  "bloque",
+  "casse",
+  "for parts",
+  "broken",
+  "kaputt",
+  "defekt",
+  "non funzionante",
+  "rotta",
+  "a restaurer",
+  "a reparer",
+  "moisissure",
+  "champignon",
+  "fuite",
+  "oxyd",
+  "ne s'allume",
+  "ne s allume"
+ ],
+ "mots_non_teste": [
+  "non teste",
+  "pas teste",
+  "non verifie",
+  "vendu en l'etat",
+  "vendu en l etat",
+  "untested",
+  "not tested",
+  "non testato",
+  "pas pu tester",
+  "impossible de tester",
+  "je ne sais pas s'il fonctionne",
+  "je ne sais pas si il fonctionne"
+ ],
+ "mots_defauts": [
+  "fissur",
+  "lentille rayee",
+  "objectif raye",
+  "rayure sur la lentille",
+  "rayure sur l'objectif",
+  "rayures sur l'objectif"
+ ],
+ "mots_suspects_titre": [],
+ "mots_suspects": [],
+ "concurrents": [],
+ "verifier_concurrents_ocr": false,
+ "marques_courantes": [
+  "canon",
+  "nikon",
+  "pentax",
+  "olympus",
+  "minolta",
+  "yashica",
+  "konica",
+  "contax",
+  "leica",
+  "ricoh",
+  "fujifilm|fuji",
+  "kodak",
+  "polaroid",
+  "praktica",
+  "zenit"
+ ]
+}

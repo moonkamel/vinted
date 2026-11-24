@@ -369,7 +369,10 @@ def rules_verdict(info: dict[str, Any]) -> dict[str, Any]:
     proof = RULES.get("libelle_preuve", "étiquette")
     # Accessoire vendu seul (housse, notice, bouchon…) : le titre en parle sans parler de l'objet lui-même
     acc = RULES.get("accessoires_titre", [])
-    if acc and any(has(title, a) for a in acc) and not any(has(title, o) for o in RULES.get("objet_principal", [])):
+    head = " ".join(title.split()[:3])
+    main_words = RULES.get("objet_principal", []) + [g for mm in RULES["modeles"] for g in mm["tous"][1:2]]
+    if acc and (any(has(head, a) for a in acc)
+                or (any(has(title, a) for a in acc) and not any(has(title, o) for o in main_words))):
         return {
             "modele_identifie": "accessoire seul", "dans_les_niches": False, "authenticite": "doute",
             "points_verifies": [], "signaux_alerte": ["le titre décrit un accessoire, pas l'objet lui-même"],
@@ -454,7 +457,8 @@ def rules_verdict(info: dict[str, Any]) -> dict[str, Any]:
         "signaux_alerte": flags,
         "photos_manquantes": [] if label_ok else [f"{proof} non lu(e) sur les photos : vérifie toi-même"],
         "revente_realiste_eur": round(resale, 2), "port_entrant_eur": model["port"], "calcul_revente": how,
-        "verdict": "ACHETER" if not flags else "OFFRE",
+        "verdict": ("PASSER" if any(f.startswith("fonctionnement douteux") for f in flags)
+                    else "ACHETER" if not flags else "OFFRE"),
         # élevée seulement si l'étiquette de la marque a été lue sur une photo
         "confiance": "faible" if flags else ("elevee" if label_ok else "moyenne"),
         "resume": (f"{proof.capitalize()} lu(e) sur les photos et aucun signal d'alerte." if label_ok else

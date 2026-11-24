@@ -6,8 +6,8 @@ Le dossier `vinted-bot/` contient ce qu'il faut copier dans `C:\Users\<toi>\vint
 |---|---|
 | `docker-compose.yml` | vinted-bot (alertes) + l'analyste Claude |
 | `analyst/` | Le service qui analyse chaque alerte avec Claude et envoie un verdict sur Telegram |
-| `analyst/rules.json` | Le mode sans IA (`MODE=regles`) : modèles reconnus, prix de référence, mots suspects et défauts |
-| `analyst/reference.md` | Les niches, prix de référence, grilles et règles de l'analyste. **À mettre à jour avec tes vraies ventes.** |
+| `analyst/rules.json` | Le mode sans IA (`MODE=regles`) : appareils photo argentiques (copie de `rules-photo.json`). Les anciennes règles vêtements sont dans `rules-vetements.json` |
+| `analyst/reference.md` | Référence du mode IA : appareils photo argentiques (`reference-vetements.md` pour l'ancienne niche). **À mettre à jour avec tes vraies ventes.** |
 | `.env.example` | Modèle du fichier `.env`, où vont ta clé API et le jeton Telegram (jamais versionné) |
 
 ## Fonctionnement
