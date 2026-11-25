@@ -1,0 +1,353 @@
+{
+ "_aide": "Règles mode femme (nov. 2026), marques à faible risque de contrefaçon. p25 = prix demandé P25 sur vinted.fr (occasion, protection comprise). Seuil 'très bonne affaire' : marge >= 25 € ET >= 60 %. S'applique aux recherches dont le nom commence par 👗.",
+ "prefixe_recherche": "👗",
+ "libelle_preuve": "étiquette",
+ "marge_min_eur": 25,
+ "marge_min_pct": 60,
+ "modeles": [
+  {
+   "nom": "Barbour femme veste cirée",
+   "tous": [
+    "barbour",
+    "veste|jacket|ciree|cire|wax|beadnell|bedale|beaufort|acorn|defence|border"
+   ],
+   "aucun": [
+    "gilet",
+    "polaire",
+    "doudoune",
+    "homme",
+    "men",
+    "matelassee",
+    "quilted",
+    "enfant",
+    "fille",
+    "garcon",
+    "bebe",
+    "kids",
+    "junior",
+    "ans!"
+   ],
+   "p25": 130,
+   "port": 7,
+   "neuf_suspect": true
+  },
+  {
+   "nom": "Sézane cardigan / pull",
+   "tous": [
+    "sezane",
+    "cardigan|gilet|pull"
+   ],
+   "aucun": [
+    "robe",
+    "chemise",
+    "jupe",
+    "top",
+    "enfant",
+    "fille",
+    "garcon",
+    "bebe",
+    "kids",
+    "junior",
+    "ans!"
+   ],
+   "p25": 64,
+   "port": 4.5
+  },
+  {
+   "nom": "Sézane robe",
+   "tous": [
+    "sezane",
+    "robe"
+   ],
+   "aucun": [
+    "enfant",
+    "fille",
+    "garcon",
+    "bebe",
+    "kids",
+    "junior",
+    "ans!"
+   ],
+   "p25": 58,
+   "port": 4.5
+  },
+  {
+   "nom": "Sandro manteau",
+   "tous": [
+    "sandro",
+    "manteau|coat"
+   ],
+   "aucun": [
+    "homme",
+    "men",
+    "enfant",
+    "fille",
+    "garcon",
+    "bebe",
+    "kids",
+    "junior",
+    "ans!"
+   ],
+   "p25": 116,
+   "port": 6
+  },
+  {
+   "nom": "Maje veste (tweed)",
+   "tous": [
+    "maje",
+    "veste|blazer|tweed"
+   ],
+   "aucun": [
+    "sans manche",
+    "gilet",
+    "enfant",
+    "fille",
+    "garcon",
+    "bebe",
+    "kids",
+    "junior",
+    "ans!"
+   ],
+   "p25": 116,
+   "port": 5
+  },
+  {
+   "nom": "Eric Bompard cachemire",
+   "tous": [
+    "bompard",
+    "pull|cardigan|gilet|col roule|cachemire|sweater"
+   ],
+   "aucun": [
+    "echarpe",
+    "bonnet",
+    "gants",
+    "plaid",
+    "snood",
+    "homme",
+    "enfant",
+    "fille",
+    "garcon",
+    "bebe",
+    "kids",
+    "junior",
+    "ans!"
+   ],
+   "p25": 104,
+   "port": 4.5
+  },
+  {
+   "nom": "A.P.C. sac cuir",
+   "tous": [
+    "a.p.c|apc",
+    "sac|demi-lune|demi lune|grace|bag"
+   ],
+   "aucun": [
+    "tote",
+    "toile",
+    "coton",
+    "canvas",
+    "shopping",
+    "pochette",
+    "enfant",
+    "fille",
+    "garcon",
+    "bebe",
+    "kids",
+    "junior",
+    "ans!"
+   ],
+   "p25": 132,
+   "port": 5
+  },
+  {
+   "nom": "A.P.C. manteau",
+   "tous": [
+    "a.p.c|apc",
+    "manteau|coat|caban"
+   ],
+   "aucun": [
+    "homme",
+    "men",
+    "enfant",
+    "fille",
+    "garcon",
+    "bebe",
+    "kids",
+    "junior",
+    "ans!"
+   ],
+   "p25": 111,
+   "port": 6
+  },
+  {
+   "nom": "Ganni bottes",
+   "tous": [
+    "ganni",
+    "botte|boot|bottine"
+   ],
+   "aucun": [
+    "enfant",
+    "fille",
+    "garcon",
+    "bebe",
+    "kids",
+    "junior",
+    "ans!"
+   ],
+   "p25": 132,
+   "port": 5.5
+  },
+  {
+   "nom": "Ganni robe",
+   "tous": [
+    "ganni",
+    "robe|dress"
+   ],
+   "aucun": [
+    "enfant",
+    "fille",
+    "garcon",
+    "bebe",
+    "kids",
+    "junior",
+    "ans!"
+   ],
+   "p25": 116,
+   "port": 4.5
+  },
+  {
+   "nom": "Rouje robe",
+   "tous": [
+    "rouje",
+    "robe"
+   ],
+   "aucun": [
+    "enfant",
+    "fille",
+    "garcon",
+    "bebe",
+    "kids",
+    "junior",
+    "ans!"
+   ],
+   "p25": 116,
+   "port": 4.5
+  },
+  {
+   "nom": "Ba&sh manteau",
+   "tous": [
+    "ba&sh|bash|ba & sh",
+    "manteau|coat"
+   ],
+   "aucun": [
+    "enfant",
+    "fille",
+    "garcon",
+    "bebe",
+    "kids",
+    "junior",
+    "ans!"
+   ],
+   "p25": 125,
+   "port": 6
+  },
+  {
+   "nom": "The Kooples veste cuir",
+   "tous": [
+    "kooples",
+    "cuir|perfecto|blouson"
+   ],
+   "aucun": [
+    "simili",
+    "faux cuir",
+    "synthetique",
+    "homme",
+    "men",
+    "enfant",
+    "fille",
+    "garcon",
+    "bebe",
+    "kids",
+    "junior",
+    "ans!"
+   ],
+   "p25": 76,
+   "port": 6
+  }
+ ],
+ "etat": {
+  "neuf avec etiquette": 1.0,
+  "neuf sans etiquette": 1.0,
+  "tres bon etat": 1.0,
+  "bon etat": 0.85,
+  "satisfaisant": 0.6
+ },
+ "tailles_peu_demandees": [
+  "xxs",
+  "3xl",
+  "4xl",
+  "5xl"
+ ],
+ "decote_taille": 0.85,
+ "vendeur_pro_avis": 1000,
+ "accessoires_titre": [],
+ "accessoires_forts": [],
+ "objet_principal": [],
+ "mots_panne": [],
+ "mots_non_teste": [],
+ "mots_defauts": [
+  "trou",
+  "tache",
+  "accroc",
+  "decousu",
+  "bouloch",
+  "pilling",
+  "dechir",
+  "moisi",
+  "jauni",
+  "delave par endroits",
+  "manque un bouton"
+ ],
+ "mots_suspects_titre": [
+  "inspire",
+  "style ",
+  "type ",
+  "facon ",
+  "dupe"
+ ],
+ "mots_suspects": [
+  "replica",
+  "copie",
+  "fake",
+  "imitation",
+  "dupe"
+ ],
+ "concurrents": [
+  "zara",
+  "mango",
+  "h&m",
+  "shein",
+  "primark",
+  "kiabi",
+  "promod",
+  "naf naf"
+ ],
+ "verifier_concurrents_ocr": true,
+ "marques_courantes": [
+  "sezane",
+  "sandro",
+  "maje",
+  "ba&sh|bash",
+  "rouje",
+  "ganni",
+  "zara",
+  "mango",
+  "h&m",
+  "kooples",
+  "claudie pierlot",
+  "apc|a.p.c",
+  "isabel marant",
+  "jacquemus",
+  "barbour"
+ ]
+}

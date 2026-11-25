@@ -439,6 +439,8 @@ def rules_verdict(info: dict[str, Any]) -> dict[str, Any]:
     if defects := mentioned_defects(desc):
         flags.append("défaut mentionné : " + ", ".join(defects))
     cond = norm(info["condition"])
+    if model and model.get("neuf_suspect") and cond.startswith("neuf"):
+        flags.append("« neuf » à petit prix sur une marque copiée : contrefaçon possible, vérifie l'étiquette")
     if model and "USA" in model["nom"] and cond.startswith("neuf"):
         flags.append("« neuf » sur un modèle vintage : à vérifier")
     if not model:
