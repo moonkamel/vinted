@@ -462,15 +462,19 @@ def rules_verdict(info: dict[str, Any]) -> dict[str, Any]:
     resale = model.get("revente") or ((model["p25"] - 0.70) / 1.05) * 0.83
     how = (f"vente connue {model['revente']} €" if model.get("revente")
            else f"P25 {model['p25']} € → ((P25 − 0,70) ÷ 1,05) × 0,83")
+    # État annoncé et usure décrite (cachemire feutré, bouloches…) parlent souvent du même défaut :
+    # on applique seulement la plus forte des décotes au lieu de les multiplier.
+    discounts = []
     factor = next((f for k, f in RULES["etat"].items() if cond.startswith(k)), 1.0)
     if factor < 1:
-        resale *= factor
-        how += f" × {factor} (état)"
-    # Usure mentionnée qui baisse la valeur sans justifier un refus (cachemire feutré, quelques bouloches…)
+        discounts.append((factor, "état"))
     for d in RULES.get("decotes_usure", []):
         if hit := mentioned_defects(f"{title} {desc}", d["mots"]):
-            resale *= d["facteur"]
-            how += f" × {d['facteur']} ({d['label']} : {', '.join(hit[:2])})"
+            discounts.append((d["facteur"], f"{d['label']} : {', '.join(hit[:2])}"))
+    if discounts:
+        f, why = min(discounts, key=lambda x: x[0])
+        resale *= f
+        how += f" × {f} ({why}" + (", décote la plus forte retenue)" if len(discounts) > 1 else ")")
     if any(re.search(rf"\b{re.escape(s)}\b", norm(info["size"])) for s in RULES["tailles_peu_demandees"]):
         resale *= RULES["decote_taille"]
         how += f" × {RULES['decote_taille']} (taille peu demandée)"
