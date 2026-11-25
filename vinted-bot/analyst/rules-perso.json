@@ -662,10 +662,15 @@
    "skinny",
    "super slim",
    "extra slim",
-   "jegging"
+   "jegging",
+   "511!",
+   "510!",
+   "512!",
+   "519!"
   ]
  },
  "pays_vendeur": [
   "FR"
- ]
+ ],
+ "prefixe_transfert": "🍳"
 }

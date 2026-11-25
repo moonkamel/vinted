@@ -664,10 +664,30 @@ def perso_job(job: dict[str, Any]) -> bool:
     """Recherche 👕 (achats perso) : la marque et le prix de l'alerte suffisent, sans ouvrir la page Vinted.
     Prévient sur Telegram si l'annonce est sous le plafond de sa marque. Renvoie False si ce n'est pas une recherche 👕."""
     search = job.get("search") or ""
+    alert = job.get("alert") or {}
+    # Recherches 🍳 (robots…) : le bot a déjà filtré modèle et prix, l'analyste ne fait que vérifier le pays du vendeur
+    fwd = next((r for r in RULESETS if r.get("type") == "perso" and r.get("prefixe_transfert")
+                and search.startswith(r["prefixe_transfert"])), None)
+    if fwd:
+        country = ((alert.get("seller_profile") or {}).get("country") or "").upper()
+        if fwd.get("pays_vendeur") and country and country not in fwd["pays_vendeur"]:
+            log.info("transfert ignoré (vendeur %s) · %s", country, alert.get("title", ""))
+            return True
+        total = float(alert.get("total_price") or 0) or total_from_price(float(alert.get("price") or 0))
+        log.info("transfert · %s · %s · %.2f €", search, alert.get("title", ""), total)
+        send("\n".join([
+            f"{escape(search)}",
+            f"{escape(alert.get('title', ''))}" + (f" · {escape(str(alert.get('condition')))}" if alert.get("condition") else ""),
+            f"💶 <b>{total:.2f} €</b> tout compris",
+            "", escape(job["url"]),
+            *([f"🛒 <a href=\"{escape(alert['links']['buy'])}\">Acheter</a> · "
+               f"<a href=\"{escape(alert['links'].get('message_seller', job['url']))}\">Écrire au vendeur</a>"]
+              if (alert.get("links") or {}).get("buy") else []),
+        ]))
+        return True
     rs = next((r for r in RULESETS if r.get("type") == "perso" and search.startswith(r["prefixe_recherche"])), None)
     if not rs:
         return False
-    alert = job.get("alert") or {}
     title, brand = alert.get("title", ""), alert.get("brand", "") or ""
     text = pokemon.norm(f"{brand} {title}")
     s = pokemon.norm(search)
