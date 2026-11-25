@@ -31,6 +31,7 @@ import httpx
 from vinted_mcp.scraper import VintedClient
 
 import ocr
+import pokemon
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s analyst %(levelname)s %(message)s")
 log = logging.getLogger("analyst")
@@ -70,8 +71,12 @@ SYSTEM_PROMPT = (Path(__file__).with_name("reference.md")).read_text(encoding="u
 # le premier jeu sans préfixe s'applique aux autres. Pour un lien collé à la main, on essaie chaque jeu.
 RULES_FILES = [f.strip() for f in os.environ.get("RULES_FILES", os.environ.get("RULES_FILE", "rules.json,rules-mode.json")).split(",")
                if f.strip() and (Path(__file__).with_name(f.strip())).exists()]
+# Le module cartes Pokémon (rules-pokemon.json) est toujours chargé, même si RULES_FILES ne le cite pas.
+if (Path(__file__).with_name("rules-pokemon.json")).exists() and "rules-pokemon.json" not in RULES_FILES:
+    RULES_FILES.append("rules-pokemon.json")
 RULESETS = [json.loads((Path(__file__).with_name(f)).read_text(encoding="utf-8")) for f in RULES_FILES]
-RULES = RULESETS[0]
+RULES = next((r for r in RULESETS if r.get("type") != "tcgdex"), RULESETS[0])
+TCG = pokemon.TCGdex(DATA)
 claude = anthropic.Anthropic() if MODE == "ia" else None  # lit ANTHROPIC_API_KEY
 vinted = VintedClient(VINTED_BASE_URL)
 jobs: queue.Queue[dict[str, Any]] = queue.Queue()
@@ -227,7 +232,7 @@ def download(url: str) -> tuple[str, str] | None:
     return None
 
 
-def read_labels(photos: list[str]) -> dict[str, Any]:
+def read_labels(photos: list[str], angles: tuple[int, ...] = (0, 90, 270, 30, -30)) -> dict[str, Any]:
     """Lit le texte des étiquettes sur chaque photo et fusionne les indices trouvés."""
     merged: dict[str, Any] = {"brands": [], "competitors": [], "photos_lues": 0, "texte": ""}
     for url in photos:
@@ -235,7 +240,7 @@ def read_labels(photos: list[str]) -> dict[str, Any]:
         if not got:
             continue
         try:
-            raw = ocr.read_image(got[1])
+            raw = ocr.read_image(got[1], angles)
             f = ocr.facts(raw)
         except Exception as exc:  # noqa: BLE001
             log.warning("OCR impossible sur une photo : %s", exc)
@@ -511,15 +516,130 @@ def rules_verdict(info: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _stop(model: str, reason: str, flags: list[str] | None = None, title: str = "") -> dict[str, Any]:
+    return {
+        "modele_identifie": model, "dans_les_niches": False, "authenticite": "doute", "points_verifies": [],
+        "signaux_alerte": (flags or []) + [reason], "photos_manquantes": [], "revente_realiste_eur": 0,
+        "port_entrant_eur": 0, "calcul_revente": "aucune référence", "verdict": "PASSER", "confiance": "faible",
+        "resume": reason[:1].upper() + reason[1:] + ".", "message_vendeur": "", "titre_affine": title,
+    }
+
+
+def pokemon_verdict(info: dict[str, Any], rs: dict[str, Any]) -> dict[str, Any]:
+    """Carte Pokémon : identification via TCGdex, prix Cardmarket, contrôles anti-contrefaçon."""
+    title, desc = pokemon.norm(info["title"]), pokemon.norm(info.get("description", ""))
+    both = f"{title} {desc}"
+    if hit := mentioned_defects(both, rs["mots_contrefacon"]):
+        return _stop("carte non officielle", f"contrefaçon ou carte non officielle possible ({', '.join(hit[:2])})")
+    for key, why in (("mots_gradees", "carte gradée : le prix d'une carte brute ne s'applique pas"),
+                     ("mots_asie", "version asiatique : son prix Cardmarket est différent"),
+                     ("mots_accessoires", "accessoire ou produit dérivé, pas une carte"),
+                     ("mots_scelles", "produit scellé : non estimé par TCGdex")):
+        if hit := mentioned_defects(title, rs[key]):
+            return _stop("hors cartes à l'unité", f"{why} ({hit[0]})")
+    if not TCG.ready.wait(600):
+        return _stop("carte non identifiée", "base TCGdex pas encore prête")
+    labels = info.get("labels") or {}
+    groups = TCG.identify(info["title"], info.get("description", ""), labels.get("texte", ""))
+    if not groups and OCR_ON and not labels.get("photos_lues"):
+        # Titre vague : on lit le numéro et le nom imprimés sur la carte (photos droites, 1 seul angle : rapide)
+        labels = info["labels"] = read_labels(info["photos"][:3], angles=(0,))
+        groups = TCG.identify(info["title"], info.get("description", ""), labels.get("texte", ""))
+    if not groups:
+        return _stop("carte non identifiée", "ni numéro (ex. 199/165) ni nom + extension reconnus")
+    # "Dracaufeu 4/102 Célébrations / 30 ans" : réimpression qui porte le numéro de l'originale (cote bien plus basse)
+    if (hit := mentioned_defects(both, rs.get("mots_reimpression", []))) and any(
+            x["set"] not in rs.get("extensions_anniversaire", []) for g in groups for x in g["cartes"]):
+        return _stop("réimpression possible", f"réimpression d'anniversaire ({hit[0]}) : la cote de l'originale ne s'applique pas")
+    reverse = has(both, "reverse")
+    total, parts, cards, missing = 0.0, [], [], 0
+    for g in groups:
+        priced = [(v, c) for v, c in (TCG.value(x["id"], reverse) for x in g["cartes"]) if v]
+        if not priced:
+            missing += 1
+            continue
+        v, c = min(priced, key=lambda x: x[0])  # réimpressions possibles : on garde la moins chère
+        total += v
+        cards.append((g, c, v, len(g["cartes"])))
+        parts.append(f"{c['name']} {c['local_id']}/{c['official']} ({c['set']}) {v:.2f} €")
+    if not cards:
+        return _stop("carte sans prix", "aucun prix Cardmarket pour cette carte")
+    g0, c0, v0, n0 = cards[0]
+    lot = len(cards) > 1 or has(title, "lot")
+    name = (f"Lot : {len(cards)} carte(s) reconnue(s)" if lot else
+            f"{c0['name']} {c0['local_id']}/{c0['official']} · {c0['set']}" + (f" · {c0['rarity']}" if c0.get("rarity") else ""))
+    flags: list[str] = []
+    seller = info.get("seller") or {}
+    reviews = seller.get("reviews") or 0
+    if seller.get("business") or seller.get("business_seller") or reviews >= rs["vendeur_pro_avis"]:
+        flags.append(f"vendeur professionnel ou en volume ({reviews} avis) : prix déjà au marché")
+    if total < rs["valeur_min_eur"] and not lot:
+        return _stop(name, f"carte cotée {total:.2f} € seulement sur Cardmarket", title=name)
+    # Décote d'état : seule la plus forte s'applique
+    factor, why = 1.0, ""
+    for d in rs["decotes_etat"]:
+        if (hit := mentioned_defects(both, d["mots"])) and d["facteur"] < factor:
+            factor, why = d["facteur"], f"{d['label']} : {', '.join(hit[:2])}"
+    resale = total * rs["facteur_revente"] * factor
+    how = (f"Cardmarket {' + '.join(parts)}" + (f" ; {missing} carte(s) sans prix" if missing else "")
+           + f" → × {rs['facteur_revente']} (état inconnu, frais de revente)" + (f" × {factor} ({why})" if why else ""))
+    cheap = info["total_price"] < rs["prix_suspect_ratio"] * total
+    checked = [f"carte identifiée par {g0['via']}" + (" (réimpressions possibles : prix le plus bas retenu)" if n0 > 1 else ""),
+               f"prix Cardmarket du {str(c0['cm'].get('updated') or '')[:10]}"]
+    if reverse:
+        checked.append("version reverse : prix reverse utilisé")
+    sure = all(g["sure"] for g, *_ in cards)
+    confidence = "elevee" if sure and not lot else "moyenne"
+    if cheap:
+        flags.append(f"prix à {100 * info['total_price'] / total:.0f} % de la cote : vérifie que les photos sont réelles "
+                     "et que la carte n'est pas une copie")
+        # Une vraie pépite existe (vendeur qui ne connaît pas la cote), mais sous 5 % c'est presque toujours une copie
+        # ou une erreur d'identification : pas d'alerte, comme pour un vendeur sans aucun avis.
+        confidence = "faible" if reviews == 0 or info["total_price"] < rs.get("prix_copie_ratio", 0.05) * total \
+            else min(confidence, "moyenne", key=CONFIDENCE_RANK.get)
+    if any(f.startswith("vendeur professionnel") for f in flags):
+        confidence = "faible"
+    return {
+        "modele_identifie": name, "dans_les_niches": True,
+        "authenticite": "probable",
+        "points_verifies": checked, "signaux_alerte": flags,
+        "photos_manquantes": ["recto et verso nets, coins et bords"] if not lot else ["photo nette de chaque carte de valeur"],
+        "revente_realiste_eur": round(resale, 2), "port_entrant_eur": rs["port"], "calcul_revente": how,
+        "verdict": "ACHETER" if not flags or (cheap and len(flags) == 1) else "OFFRE",
+        "confiance": confidence,
+        "resume": ("Lot : valeur minimale, seules les cartes reconnues sont comptées." if lot else
+                   "Carte reconnue et cotée sur Cardmarket.") + (" Prix très bas : vérifie bien avant de payer." if cheap else ""),
+        "message_vendeur": "",
+        "titre_affine": "" if lot else f"Carte Pokémon {c0['name']} {c0['local_id']}/{c0['official']} {c0['set']}"
+                                       + (f" {c0['rarity']}" if c0.get("rarity") else ""),
+        "seuil_eur": rs["marge_min_eur"], "seuil_pct": rs["marge_min_pct"],
+        "recherche_continue": True,  # recherches larges : on ne propose pas de les arrêter après un achat
+    }
+
+
+def is_pokemon_search(rs: dict[str, Any], search: str) -> bool:
+    return search.startswith(rs.get("prefixe_recherche") or "\0") or any(
+        has(norm(search), w) for w in rs.get("mots_recherche", []))
+
+
 def rules_verdict_auto(info: dict[str, Any], job: dict[str, Any]) -> dict[str, Any]:
     """Choisit le jeu de règles : par préfixe du nom de recherche, sinon en essayant chacun (lien manuel)."""
     global RULES
     search = job.get("search") or ""
+    for rs in RULESETS:
+        if rs.get("type") == "tcgdex" and is_pokemon_search(rs, search):
+            return pokemon_verdict(info, rs)
     candidates = [r for r in RULESETS if r.get("prefixe_recherche") and search.startswith(r["prefixe_recherche"])]
     if not candidates and not job.get("manual"):
         candidates = [next((r for r in RULESETS if not r.get("prefixe_recherche")), RULESETS[0])]
     first = None
     for rs in candidates or RULESETS:
+        if rs.get("type") == "tcgdex":
+            v = pokemon_verdict(info, rs)
+            first = first or v
+            if v["revente_realiste_eur"] > 0:
+                return v
+            continue
         RULES = rs
         v = rules_verdict(info)
         first = first or v
@@ -579,7 +699,7 @@ def render(info: dict[str, Any], v: dict[str, Any], cost: float) -> str:
     if v["message_vendeur"]:
         lines.append(f"✉️ <code>{escape(v['message_vendeur'])}</code>")
     lines.append(f"\n{escape(info['url'])}")
-    if info.get("search_id"):
+    if info.get("search_id") and not v.get("recherche_continue"):
         lines.append(f"🛑 Acheté ? Pour arrêter la recherche « {escape(info['search'])} », envoie au bot Vinted : "
                      f"<code>/remove {info['search_id']}</code> (ou <code>/pause {info['search_id']}</code>)")
     lines.append("<i>analyse par règles (gratuite)</i>" if MODE == "regles" else f"<i>analyse {MODEL} ≈ {cost:.3f} $</i>")
@@ -621,7 +741,10 @@ def worker() -> None:
                 log.info("annonce déjà réservée, ignorée : %s", info["url"])
                 continue
             if MODE == "regles":
-                if OCR_ON:
+                pokemon_job = any(rs.get("type") == "tcgdex" and is_pokemon_search(rs, job.get("search") or "")
+                                  for rs in RULESETS)
+                # Cartes : l'OCR n'est lancé que si le titre ne suffit pas (voir pokemon_verdict), pour aller vite.
+                if OCR_ON and not pokemon_job:
                     info["labels"] = read_labels(info["photos"])
                 verdict, cost = rules_verdict_auto(info, job), 0.0
             else:
@@ -644,6 +767,8 @@ def worker() -> None:
 
 
 def main() -> None:
+    if any(rs.get("type") == "tcgdex" for rs in RULESETS):
+        TCG.start()
     threading.Thread(target=telegram_loop, daemon=True).start()
     threading.Thread(target=worker, daemon=True).start()
     log.info("Analyste prêt (mode %s, modèle %s, notifications : %s).", MODE, MODEL if MODE == "ia" else "-", NOTIFY)

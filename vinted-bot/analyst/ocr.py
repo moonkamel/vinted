@@ -22,7 +22,7 @@ def _words(text: str) -> int:
     return len(re.findall(r"[A-Za-z]{3,}", text))
 
 
-def read_image(data: bytes) -> str:
+def read_image(data: bytes, angles: tuple[int, ...] = (0, 90, 270, 30, -30)) -> str:
     """Texte lu sur une photo. Essaie plusieurs rotations quand l'étiquette est de travers."""
     img = Image.open(io.BytesIO(data)).convert("L")
     if img.width < 1600:
@@ -30,7 +30,7 @@ def read_image(data: bytes) -> str:
         img = img.resize((int(img.width * f), int(img.height * f)))
     img = ImageOps.autocontrast(img)
     best = ""
-    for angle in (0, 90, 270, 30, -30):
+    for angle in angles:
         im = img.rotate(angle, expand=True, fillcolor=255) if angle else img
         try:
             txt = pytesseract.image_to_string(im, lang="eng+fra", config="--psm 11", timeout=20)

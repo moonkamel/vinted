@@ -5,5 +5,5 @@ RUN apt-get update && apt-get install -y --no-install-recommends tesseract-ocr t
 WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-COPY analyst.py ocr.py reference.md *.json ./
+COPY analyst.py ocr.py pokemon.py reference.md *.json ./
 CMD ["python", "-u", "analyst.py"]
