@@ -65,8 +65,13 @@ DATA = Path(os.environ.get("DATA_DIR", "/data"))
 DATA.mkdir(parents=True, exist_ok=True)
 SYSTEM_PROMPT = (Path(__file__).with_name("reference.md")).read_text(encoding="utf-8")
 
-RULES_FILE = os.environ.get("RULES_FILE", "rules.json")
-RULES = json.loads((Path(__file__).with_name(RULES_FILE)).read_text(encoding="utf-8"))
+# Plusieurs jeux de règles possibles (ex. appareils photo + mode) : "rules.json,rules-mode.json".
+# Un jeu qui a un "prefixe_recherche" (ex. "👗") s'applique aux recherches dont le nom commence par ce préfixe ;
+# le premier jeu sans préfixe s'applique aux autres. Pour un lien collé à la main, on essaie chaque jeu.
+RULES_FILES = [f.strip() for f in os.environ.get("RULES_FILES", os.environ.get("RULES_FILE", "rules.json,rules-mode.json")).split(",")
+               if f.strip() and (Path(__file__).with_name(f.strip())).exists()]
+RULESETS = [json.loads((Path(__file__).with_name(f)).read_text(encoding="utf-8")) for f in RULES_FILES]
+RULES = RULESETS[0]
 claude = anthropic.Anthropic() if MODE == "ia" else None  # lit ANTHROPIC_API_KEY
 vinted = VintedClient(VINTED_BASE_URL)
 jobs: queue.Queue[dict[str, Any]] = queue.Queue()
@@ -483,7 +488,26 @@ def rules_verdict(info: dict[str, Any]) -> dict[str, Any]:
                   else "Signaux d'alerte à vérifier avant tout achat.",
         "message_vendeur": "",
         "titre_affine": refined_title(model["nom"], info, labels),
+        "seuil_eur": model.get("marge_min_eur", RULES.get("marge_min_eur")),
+        "seuil_pct": model.get("marge_min_pct", RULES.get("marge_min_pct")),
     }
+
+
+def rules_verdict_auto(info: dict[str, Any], job: dict[str, Any]) -> dict[str, Any]:
+    """Choisit le jeu de règles : par préfixe du nom de recherche, sinon en essayant chacun (lien manuel)."""
+    global RULES
+    search = job.get("search") or ""
+    candidates = [r for r in RULESETS if r.get("prefixe_recherche") and search.startswith(r["prefixe_recherche"])]
+    if not candidates and not job.get("manual"):
+        candidates = [next((r for r in RULESETS if not r.get("prefixe_recherche")), RULESETS[0])]
+    first = None
+    for rs in candidates or RULESETS:
+        RULES = rs
+        v = rules_verdict(info)
+        first = first or v
+        if v["revente_realiste_eur"] > 0 or v["modele_identifie"] == "accessoire seul":
+            return v
+    return first
 
 
 def apply_rule(info: dict[str, Any], v: dict[str, Any]) -> dict[str, Any]:
@@ -492,9 +516,11 @@ def apply_rule(info: dict[str, Any], v: dict[str, Any]) -> dict[str, Any]:
     cost = info["total_price"] + port
     margin = resale - cost
     pct = 100 * margin / cost if cost else 0
-    max_cost = min(resale / (1 + MIN_MARGIN_PCT / 100), resale - MIN_MARGIN_EUR)
+    min_eur = float(v.get("seuil_eur") or MIN_MARGIN_EUR)
+    min_pct = float(v.get("seuil_pct") or MIN_MARGIN_PCT)
+    max_cost = min(resale / (1 + min_pct / 100), resale - min_eur)
     max_price = price_from_total(max_cost - port)
-    ok = margin >= MIN_MARGIN_EUR and pct >= MIN_MARGIN_PCT
+    ok = margin >= min_eur and pct >= min_pct
     v.update(cout=cost, marge=margin, marge_pct=pct, prix_max_annonce=max_price, regle_ok=ok)
     if v["verdict"] == "ACHETER" and not ok:
         v["verdict"] = "OFFRE" if max_price >= 0.6 * info["price"] else "PASSER"
@@ -579,7 +605,7 @@ def worker() -> None:
             if MODE == "regles":
                 if OCR_ON:
                     info["labels"] = read_labels(info["photos"])
-                verdict, cost = rules_verdict(info), 0.0
+                verdict, cost = rules_verdict_auto(info, job), 0.0
             else:
                 verdict, cost = ask_claude(info)
             verdict = apply_rule(info, verdict)
