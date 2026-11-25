@@ -393,7 +393,17 @@ def rules_verdict(info: dict[str, Any]) -> dict[str, Any]:
     strong_hit = [w for w in strong if has(title, w) and not bundled(w)]
     is_strong = bool(strong_hit) and (any(has(head, w) for w in strong_hit)
                                       or not any(has(title, o) for o in RULES.get("objet_principal", [])))
-    if is_strong or (acc and (any(has(head, a) for a in acc)
+    # La marque du modèle (1er groupe) doit être dans le titre ou le champ marque, pas seulement
+    # dans la description : sinon une liste de hashtags "Carhartt Patagonia TNF…" suffirait.
+    def find(brand_zone: str, zone: str) -> dict[str, Any] | None:
+        return next((m for m in RULES["modeles"]
+                     if has(brand_zone, m["tous"][0]) and all(has(zone, g) for g in m["tous"][1:])
+                     and not any(has(zone, w) for w in m["aucun"])), None)
+    # Objectif vendu seul ("Canon FD 35-70mm f/3.5") : une focale dans le titre, mais le titre seul
+    # ne nomme aucun modèle d'appareil suivi ni un mot "appareil / boîtier…".
+    lens = RULES.get("detecter_objectifs") and re.search(r"\b\d{2,3}(-\d{2,3})? ?mm\b|\bf/? ?\d", title) \
+        and not find(f"{title} {brand}", title) and not any(has(title, o) for o in RULES.get("objet_principal", []))
+    if lens or is_strong or (acc and (any(has(head, a) for a in acc)
                      or (any(has(title, a) for a in acc) and not any(has(title, o) for o in main_words)))):
         return {
             "modele_identifie": "accessoire seul", "dans_les_niches": False, "authenticite": "doute",
@@ -402,12 +412,6 @@ def rules_verdict(info: dict[str, Any]) -> dict[str, Any]:
             "calcul_revente": "aucune référence", "verdict": "PASSER", "confiance": "faible",
             "resume": "Accessoire vendu seul.", "message_vendeur": "", "titre_affine": "",
         }
-    # La marque du modèle (1er groupe) doit être dans le titre ou le champ marque, pas seulement
-    # dans la description : sinon une liste de hashtags "Carhartt Patagonia TNF…" suffirait.
-    def find(brand_zone: str, zone: str) -> dict[str, Any] | None:
-        return next((m for m in RULES["modeles"]
-                     if has(brand_zone, m["tous"][0]) and all(has(zone, g) for g in m["tous"][1:])
-                     and not any(has(zone, w) for w in m["aucun"])), None)
     # Le titre et la description priment ; le texte lu sur les photos ne sert qu'à compléter un titre vague.
     model = find(f"{title} {brand}", f"{title} {desc}") or find(f"{title} {brand} {label_text}", text)
     flags: list[str] = []

@@ -12,20 +12,26 @@
     "veste|jacket|ciree|cire|wax|beadnell|bedale|beaufort|acorn|defence|border"
    ],
    "aucun": [
-    "gilet",
-    "polaire",
+    "ans!",
+    "bebe",
     "doudoune",
-    "homme",
-    "men",
-    "matelassee",
-    "quilted",
+    "down",
+    "duvet",
     "enfant",
     "fille",
+    "fleece",
     "garcon",
-    "bebe",
-    "kids",
+    "gilet",
+    "homme",
     "junior",
-    "ans!"
+    "kids",
+    "matelasse",
+    "matelassee",
+    "men",
+    "padded",
+    "polaire",
+    "puffer",
+    "quilted"
    ],
    "p25": 130,
    "port": 7,
@@ -119,7 +125,7 @@
    "nom": "Maje veste (tweed)",
    "tous": [
     "maje",
-    "veste|blazer|tweed"
+    "tweed|boucle|bouclette"
    ],
    "aucun": [
     "ans!",
