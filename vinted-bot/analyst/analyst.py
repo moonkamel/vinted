@@ -577,9 +577,18 @@ def pokemon_verdict(info: dict[str, Any], rs: dict[str, Any]) -> dict[str, Any]:
         return _stop(name, f"carte cotée {total:.2f} € seulement sur Cardmarket", title=name)
     # Décote d'état : seule la plus forte s'applique
     factor, why = 1.0, ""
-    for d in rs["decotes_etat"]:
-        if (hit := mentioned_defects(both, d["mots"])) and d["facteur"] < factor:
-            factor, why = d["facteur"], f"{d['label']} : {', '.join(hit[:2])}"
+    cond = pokemon.norm(info.get("condition", ""))
+    for k, f in rs.get("etat_vinted", {}).items():
+        if cond.startswith(k) and f < factor:
+            factor, why = f, f"état Vinted : {info.get('condition')}"
+    # Du plus léger au plus fort, en retirant les expressions déjà reconnues ("light played" n'est pas "played")
+    rest = both
+    for d in sorted(rs["decotes_etat"], key=lambda d: -d["facteur"]):
+        if hit := mentioned_defects(rest, d["mots"]):
+            for w in hit:
+                rest = rest.replace(w, " ")
+            if d["facteur"] < factor:
+                factor, why = d["facteur"], f"{d['label']} : {', '.join(hit[:2])}"
     resale = total * rs["facteur_revente"] * factor
     how = (f"Cardmarket {' + '.join(parts)}" + (f" ; {missing} carte(s) sans prix" if missing else "")
            + f" → × {rs['facteur_revente']} (état inconnu, frais de revente)" + (f" × {factor} ({why})" if why else ""))

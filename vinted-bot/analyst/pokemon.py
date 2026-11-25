@@ -204,7 +204,7 @@ class TCGdex:
     def card(self, card_id: str) -> dict[str, Any]:
         with self.lock:
             c = self.prices.get(card_id)
-        if c and time.time() - c.get("at", 0) < PRICE_MAX_AGE:
+        if c and time.time() - c.get("at", 0) < PRICE_MAX_AGE and "avg7-holo" in c.get("cm", {}):
             return c
         d: dict[str, Any] = {}
         for lang in ("fr", "en"):
@@ -218,7 +218,8 @@ class TCGdex:
         c = {"at": time.time(), "name": d.get("name"), "rarity": d.get("rarity"),
              "set": (d.get("set") or {}).get("name"), "official": ((d.get("set") or {}).get("cardCount") or {}).get("official"),
              "local_id": d.get("localId"), "cm": {k: cm.get(k) for k in
-                                                  ("trend", "avg30", "avg7", "low", "trend-holo", "avg30-holo", "updated")}}
+                                                  ("trend", "avg30", "avg7", "avg", "low", "trend-holo", "avg30-holo",
+                                                   "avg7-holo", "avg-holo", "updated")}}
         with self.lock:
             self.prices[card_id] = c
             try:
@@ -228,10 +229,13 @@ class TCGdex:
         return c
 
     def value(self, card_id: str, reverse: bool = False) -> tuple[float | None, dict[str, Any]]:
-        """Prix de référence prudent : le plus bas entre la tendance et la moyenne 30 jours Cardmarket."""
+        """Prix de référence prudent : le plus bas entre tendance, moyennes 30 et 7 jours et prix moyen de vente.
+        Sur une carte peu échangée, une seule vente chère fait exploser la tendance (ex. 232 € pour une
+        commune reverse vendue 15 à 25 €) : prendre le plus bas évite ces fausses pépites."""
         c = self.card(card_id)
         cm = c["cm"]
-        keys = (("trend-holo", "avg30-holo"), ("trend", "avg30")) if reverse else (("trend", "avg30"),)
+        base = ("trend", "avg30", "avg7", "avg")
+        keys = (tuple(f"{k}-holo" for k in base), base) if reverse else (base,)
         for k in keys:
             vals = [cm.get(x) for x in k if (cm.get(x) or 0) > 0]
             if vals:

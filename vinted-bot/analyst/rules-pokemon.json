@@ -115,15 +115,20 @@
  ],
  "decotes_etat": [
   {
-   "label": "carte abîmée",
-   "facteur": 0.4,
+   "label": "carte très abîmée",
+   "facteur": 0.3,
    "mots": [
+    "poor!",
+    "po!",
+    "heavily played",
+    "tres abime",
+    "tres usee",
+    "mauvais etat",
     "pli!",
     "plis!",
     "pliee",
     "pliure",
     "dechir",
-    "abime",
     "tache!",
     "taches!",
     "humid",
@@ -134,18 +139,34 @@
   },
   {
    "label": "carte jouée",
-   "facteur": 0.75,
+   "facteur": 0.6,
    "mots": [
-    "rayure",
-    "rayee",
+    "played",
+    "pl!",
+    "jouee",
     "whitening",
     "blanchi",
     "usure",
     "usee!",
-    "jouee",
-    "played",
+    "rayure",
+    "rayee",
+    "griffure",
+    "eraflure",
     "coins abim",
-    "bords abim"
+    "bords abim",
+    "abime"
+   ]
+  },
+  {
+   "label": "carte légèrement jouée",
+   "facteur": 0.8,
+   "mots": [
+    "light played",
+    "lightly played",
+    "lp!",
+    "legerement jouee",
+    "quelques traces",
+    "petites traces"
    ]
   }
  ],
@@ -171,5 +192,11 @@
   "cel25",
   "cel25cc"
  ],
- "prix_copie_ratio": 0.05
+ "prix_copie_ratio": 0.05,
+ "etat_vinted": {
+  "satisfaisant": 0.6,
+  "satisfactory": 0.6,
+  "bon etat": 0.85,
+  "good": 0.85
+ }
 }
