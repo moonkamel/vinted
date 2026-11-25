@@ -204,7 +204,7 @@ class TCGdex:
     def card(self, card_id: str) -> dict[str, Any]:
         with self.lock:
             c = self.prices.get(card_id)
-        if c and time.time() - c.get("at", 0) < PRICE_MAX_AGE and "low-holo" in c.get("cm", {}):
+        if c and time.time() - c.get("at", 0) < PRICE_MAX_AGE and "avg1" in c.get("cm", {}):
             return c
         d: dict[str, Any] = {}
         for lang in ("fr", "en"):
@@ -219,7 +219,8 @@ class TCGdex:
              "set": (d.get("set") or {}).get("name"), "official": ((d.get("set") or {}).get("cardCount") or {}).get("official"),
              "local_id": d.get("localId"), "cm": {k: cm.get(k) for k in
                                                   ("trend", "avg30", "avg7", "avg", "low", "trend-holo", "avg30-holo",
-                                                   "avg7-holo", "avg-holo", "low-holo", "updated")}}
+                                                   "avg7-holo", "avg-holo", "low-holo", "avg1", "avg1-holo",
+                                                   "updated")}}
         with self.lock:
             self.prices[card_id] = c
             try:

@@ -570,9 +570,16 @@ def pokemon_verdict(info: dict[str, Any], rs: dict[str, Any]) -> dict[str, Any]:
             missing += 1
             continue
         v, c = min(priced, key=lambda x: x[0])  # réimpressions possibles : on garde la moins chère
-        low = c["cm"].get("low-holo" if reverse and not many else "low") or 0
+        sfx = "-holo" if reverse and not many else ""
+        low = c["cm"].get(f"low{sfx}") or 0
+        # Cote instable : prix plancher dérisoire, ou moyennes (veille, 7 j, 30 j, tendance) qui varient du simple
+        # au quadruple. Typique des promos et vieilles cartes où une vente gradée ou scellée fausse la moyenne.
+        avgs = [c["cm"].get(f"{k}{sfx}") for k in ("trend", "avg30", "avg7", "avg", "avg1")]
+        avgs = [a for a in avgs if (a or 0) > 0]
         if low and low < rs.get("ecart_cote_min", 0.08) * v:
             thin.append(f"{c['name']} : de {low:.2f} € à {v:.2f} €")
+        elif len(avgs) >= 3 and min(avgs) < max(avgs) / 4:
+            thin.append(f"{c['name']} : moyennes de {min(avgs):.2f} € à {max(avgs):.2f} €")
         total += v
         cards.append((g, c, v, len(g["cartes"])))
         parts.append(f"{c['name']} {c['local_id']}/{c['official']} ({c['set']}) {v:.2f} €")
