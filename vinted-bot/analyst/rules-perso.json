@@ -7,8 +7,7 @@
   "sweat": "hauts",
   "chemise": "hauts",
   "jean": "bas",
-  "pantalon": "bas",
-  "casquette": "casquettes"
+  "pantalon": "bas"
  },
  "plafond_casquette_defaut": {
   "max": 12.0,
@@ -656,5 +655,17 @@
     }
    }
   }
+ ],
+ "mots_exclus_par_categorie": {
+  "bas": [
+   "slim",
+   "skinny",
+   "super slim",
+   "extra slim",
+   "jegging"
+  ]
+ },
+ "pays_vendeur": [
+  "FR"
  ]
 }

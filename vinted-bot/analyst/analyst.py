@@ -675,8 +675,14 @@ def perso_job(job: dict[str, Any]) -> bool:
     if not group:
         log.warning("recherche 👕 sans catégorie reconnue dans son nom : %s", search)
         return True
-    if hit := mentioned_defects(pokemon.norm(title), rs["mots_exclus"]):
+    words = rs["mots_exclus"] + rs.get("mots_exclus_par_categorie", {}).get(group, [])
+    if hit := mentioned_defects(pokemon.norm(title), words):
         log.info("perso ignoré (%s) · %s", hit[0], title)
+        return True
+    # Vendeurs étrangers écartés (frais de port, délais, retours compliqués)
+    country = ((alert.get("seller_profile") or {}).get("country") or "").upper()
+    if rs.get("pays_vendeur") and country and country not in rs["pays_vendeur"]:
+        log.info("perso ignoré (vendeur %s) · %s", country, title)
         return True
     marque = next((m for m in rs["marques"] if mentioned_defects(text, m["mots"])), None)
     if not marque:
