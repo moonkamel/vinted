@@ -1,5 +1,5 @@
 {
- "_aide": "Règles mode femme (nov. 2026), marques à faible risque de contrefaçon. p25 = prix demandé P25 sur vinted.fr (occasion, protection comprise). Seuil 'très bonne affaire' : marge >= 25 € ET >= 60 %. S'applique aux recherches dont le nom commence par 👗.",
+ "_aide": "Règles mode femme (nov. 2026), marques à faible risque de contrefaçon. p25 = prix demandé P25 sur vinted.fr (occasion, protection comprise). Seuil 'très bonne affaire' : marge >= 25 € ET >= 60 %. S'applique aux recherches dont le nom commence par 👗. 'decotes_usure' : usure qui baisse l'estimation de revente (facteur) sans bloquer l'annonce ; les négations ('sans bouloche') sont ignorées.",
  "prefixe_recherche": "👗",
  "libelle_preuve": "étiquette",
  "marge_min_eur": 25,
@@ -346,8 +346,6 @@
   "tache",
   "accroc",
   "decousu",
-  "bouloch",
-  "pilling",
   "dechir",
   "moisi",
   "jauni",
@@ -395,5 +393,31 @@
   "isabel marant",
   "jacquemus",
   "barbour"
+ ],
+ "decotes_usure": [
+  {
+   "label": "cachemire ou laine fatigués",
+   "facteur": 0.8,
+   "mots": [
+    "feutr",
+    "perdu de sa souplesse",
+    "perdu un peu de sa souplesse",
+    "perdu legerement de sa souplesse",
+    "moins doux",
+    "durci",
+    "rigidifi",
+    "un peu rigide",
+    "retreci"
+   ]
+  },
+  {
+   "label": "bouloches",
+   "facteur": 0.85,
+   "mots": [
+    "bouloch",
+    "pilling",
+    "peluch"
+   ]
+  }
  ]
 }

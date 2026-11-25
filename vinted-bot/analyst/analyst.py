@@ -462,6 +462,11 @@ def rules_verdict(info: dict[str, Any]) -> dict[str, Any]:
     if factor < 1:
         resale *= factor
         how += f" × {factor} (état)"
+    # Usure mentionnée qui baisse la valeur sans justifier un refus (cachemire feutré, quelques bouloches…)
+    for d in RULES.get("decotes_usure", []):
+        if hit := mentioned_defects(f"{title} {desc}", d["mots"]):
+            resale *= d["facteur"]
+            how += f" × {d['facteur']} ({d['label']} : {', '.join(hit[:2])})"
     if any(re.search(rf"\b{re.escape(s)}\b", norm(info["size"])) for s in RULES["tailles_peu_demandees"]):
         resale *= RULES["decote_taille"]
         how += f" × {RULES['decote_taille']} (taille peu demandée)"
