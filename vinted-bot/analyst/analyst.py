@@ -657,6 +657,35 @@ def pokemon_verdict(info: dict[str, Any], rs: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+_country_cache: dict[Any, str] = {}
+
+
+def seller_country(job: dict[str, Any]) -> str:
+    """Pays du vendeur : celui de l'alerte, sinon lu sur son profil Vinted (mis en cache). "" si introuvable."""
+    alert = job.get("alert") or {}
+    prof = alert.get("seller_profile") or {}
+    if prof.get("country"):
+        return str(prof["country"]).upper()
+    sid = prof.get("id")
+    try:
+        if not sid:
+            sid = (vinted.get_listing(job["url"]).get("seller") or {}).get("id")
+        if sid not in _country_cache:
+            _country_cache[sid] = str(vinted.get_seller(sid).get("country_code") or "").upper()
+        return _country_cache[sid]
+    except Exception as exc:  # noqa: BLE001
+        log.warning("pays du vendeur introuvable : %s", exc)
+        return ""
+
+
+def country_ok(rs: dict[str, Any], job: dict[str, Any]) -> tuple[bool, str]:
+    """Vendeur dans un pays accepté. Pays inconnu = refusé (on ne veut que des vendeurs français)."""
+    if not rs.get("pays_vendeur"):
+        return True, ""
+    c = seller_country(job)
+    return c in rs["pays_vendeur"], c or "pays inconnu"
+
+
 GROUP_LABEL = {"tshirts": "T-shirt", "hauts": "Sweat / chemise", "bas": "Jean / pantalon", "casquettes": "Casquette"}
 
 
@@ -669,8 +698,8 @@ def perso_job(job: dict[str, Any]) -> bool:
     fwd = next((r for r in RULESETS if r.get("type") == "perso" and r.get("prefixe_transfert")
                 and search.startswith(r["prefixe_transfert"])), None)
     if fwd:
-        country = ((alert.get("seller_profile") or {}).get("country") or "").upper()
-        if fwd.get("pays_vendeur") and country and country not in fwd["pays_vendeur"]:
+        ok, country = country_ok(fwd, job)
+        if not ok:
             log.info("transfert ignoré (vendeur %s) · %s", country, alert.get("title", ""))
             return True
         total = float(alert.get("total_price") or 0) or total_from_price(float(alert.get("price") or 0))
@@ -699,11 +728,6 @@ def perso_job(job: dict[str, Any]) -> bool:
     if hit := mentioned_defects(pokemon.norm(title), words):
         log.info("perso ignoré (%s) · %s", hit[0], title)
         return True
-    # Vendeurs étrangers écartés (frais de port, délais, retours compliqués)
-    country = ((alert.get("seller_profile") or {}).get("country") or "").upper()
-    if rs.get("pays_vendeur") and country and country not in rs["pays_vendeur"]:
-        log.info("perso ignoré (vendeur %s) · %s", country, title)
-        return True
     marque = next((m for m in rs["marques"] if mentioned_defects(text, m["mots"])), None)
     if not marque:
         return True
@@ -711,6 +735,12 @@ def perso_job(job: dict[str, Any]) -> bool:
     total = float(alert.get("total_price") or 0) or total_from_price(float(alert.get("price") or 0))
     if not cap or not total or total > cap["max"]:
         log.info("perso trop cher · %s · %s · %.2f € (max %s)", marque["nom"], title, total, cap and cap["max"])
+        return True
+    # Vendeurs étrangers écartés (frais de port, délais, retours compliqués) : vérifié en dernier, car il faut
+    # parfois ouvrir le profil du vendeur sur Vinted
+    ok, country = country_ok(rs, job)
+    if not ok:
+        log.info("perso ignoré (vendeur %s) · %s", country, title)
         return True
     pct = 100 * (1 - total / cap["habituel"]) if cap.get("habituel") else 0
     size, cond = alert.get("size") or "", alert.get("condition") or alert.get("status") or ""
