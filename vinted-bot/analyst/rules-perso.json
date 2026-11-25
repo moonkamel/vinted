@@ -1,0 +1,660 @@
+{
+ "type": "perso",
+ "nom": "Achats perso",
+ "prefixe_recherche": "👕",
+ "groupes": {
+  "t-shirt": "tshirts",
+  "sweat": "hauts",
+  "chemise": "hauts",
+  "jean": "bas",
+  "pantalon": "bas",
+  "casquette": "casquettes"
+ },
+ "plafond_casquette_defaut": {
+  "max": 12.0,
+  "habituel": 18.0
+ },
+ "mots_exclus": [
+  "femme!",
+  "woman",
+  "women",
+  "fille!",
+  "enfant",
+  "kids!",
+  "junior",
+  "fluo",
+  "neon",
+  "rose!",
+  "fuchsia",
+  "violet",
+  "lila",
+  "jaune",
+  "orange!",
+  "turquoise",
+  "tie dye",
+  "tie-dye",
+  "tiedye",
+  "leopard",
+  "camouflage",
+  "camo!",
+  "paillette",
+  "sequin",
+  "destroy",
+  "dechire",
+  "troue",
+  "cropped",
+  "crop!",
+  "skinny",
+  "flare",
+  "pattes d eph",
+  "hawai",
+  "fleuri",
+  "a fleurs",
+  "halloween",
+  "noel!",
+  "deguisement",
+  "costume!",
+  "pyjama",
+  "maillot de bain"
+ ],
+ "commentaire": "Plafond = prix sous lequel se trouvent 25 % des annonces de la marque en taille M / W32-33 (mesure du 25/11/2026).",
+ "marques": [
+  {
+   "nom": "Patagonia",
+   "mots": [
+    "patagonia"
+   ],
+   "plafonds": {
+    "tshirts": {
+     "max": 14.3,
+     "habituel": 21.7
+    },
+    "hauts": {
+     "max": 30.1,
+     "habituel": 41.9
+    },
+    "bas": {
+     "max": 31.1,
+     "habituel": 42.7
+    },
+    "casquettes": {
+     "max": 17.5,
+     "habituel": 23.8
+    }
+   }
+  },
+  {
+   "nom": "Knowledge Cotton",
+   "mots": [
+    "knowledge cotton",
+    "knowledgecotton"
+   ],
+   "plafonds": {
+    "tshirts": {
+     "max": 6.0,
+     "habituel": 11.2
+    },
+    "hauts": {
+     "max": 10.2,
+     "habituel": 15.9
+    },
+    "bas": {
+     "max": 10.2,
+     "habituel": 16.4
+    }
+   }
+  },
+  {
+   "nom": "Octobre",
+   "mots": [
+    "octobre"
+   ],
+   "plafonds": {
+    "tshirts": {
+     "max": 14.3,
+     "habituel": 21.7
+    },
+    "hauts": {
+     "max": 34.3,
+     "habituel": 48.0
+    },
+    "bas": {
+     "max": 35.4,
+     "habituel": 48.0
+    },
+    "casquettes": {
+     "max": 13.3,
+     "habituel": 21.6
+    }
+   }
+  },
+  {
+   "nom": "Carhartt",
+   "mots": [
+    "carhartt"
+   ],
+   "plafonds": {
+    "tshirts": {
+     "max": 11.2,
+     "habituel": 16.4
+    },
+    "hauts": {
+     "max": 21.7,
+     "habituel": 29.1
+    },
+    "bas": {
+     "max": 21.7,
+     "habituel": 32.0
+    },
+    "casquettes": {
+     "max": 16.4,
+     "habituel": 23.8
+    }
+   }
+  },
+  {
+   "nom": "The North Face",
+   "mots": [
+    "the north face",
+    "north face",
+    "tnf!"
+   ],
+   "plafonds": {
+    "tshirts": {
+     "max": 6.0,
+     "habituel": 9.1
+    },
+    "hauts": {
+     "max": 14.3,
+     "habituel": 21.7
+    },
+    "bas": {
+     "max": 13.3,
+     "habituel": 21.7
+    },
+    "casquettes": {
+     "max": 11.2,
+     "habituel": 17.5
+    }
+   }
+  },
+  {
+   "nom": "Uniqlo",
+   "mots": [
+    "uniqlo"
+   ],
+   "plafonds": {
+    "tshirts": {
+     "max": 7.0,
+     "habituel": 9.6
+    },
+    "hauts": {
+     "max": 11.2,
+     "habituel": 19.1
+    },
+    "bas": {
+     "max": 11.2,
+     "habituel": 16.4
+    }
+   }
+  },
+  {
+   "nom": "Dickies",
+   "mots": [
+    "dickies"
+   ],
+   "plafonds": {
+    "tshirts": {
+     "max": 6.0,
+     "habituel": 11.2
+    },
+    "hauts": {
+     "max": 16.4,
+     "habituel": 21.6
+    },
+    "bas": {
+     "max": 16.4,
+     "habituel": 19.6
+    },
+    "casquettes": {
+     "max": 11.2,
+     "habituel": 21.7
+    }
+   }
+  },
+  {
+   "nom": "Volcom",
+   "mots": [
+    "volcom"
+   ],
+   "plafonds": {
+    "tshirts": {
+     "max": 6.5,
+     "habituel": 11.2
+    },
+    "hauts": {
+     "max": 11.2,
+     "habituel": 16.4
+    },
+    "bas": {
+     "max": 16.4,
+     "habituel": 20.1
+    },
+    "casquettes": {
+     "max": 8.1,
+     "habituel": 11.2
+    }
+   }
+  },
+  {
+   "nom": "Nike",
+   "mots": [
+    "nike!"
+   ],
+   "plafonds": {
+    "tshirts": {
+     "max": 4.9,
+     "habituel": 7.0
+    },
+    "hauts": {
+     "max": 11.2,
+     "habituel": 18.0
+    },
+    "bas": {
+     "max": 11.2,
+     "habituel": 21.7
+    },
+    "casquettes": {
+     "max": 7.0,
+     "habituel": 8.1
+    }
+   }
+  },
+  {
+   "nom": "Levi's",
+   "mots": [
+    "levi"
+   ],
+   "plafonds": {
+    "tshirts": {
+     "max": 4.4,
+     "habituel": 6.0
+    },
+    "hauts": {
+     "max": 9.1,
+     "habituel": 11.2
+    },
+    "bas": {
+     "max": 17.0,
+     "habituel": 23.8
+    }
+   }
+  },
+  {
+   "nom": "Arket",
+   "mots": [
+    "arket"
+   ],
+   "plafonds": {
+    "tshirts": {
+     "max": 9.1,
+     "habituel": 11.2
+    },
+    "hauts": {
+     "max": 20.6,
+     "habituel": 37.5
+    },
+    "bas": {
+     "max": 15.4,
+     "habituel": 21.7
+    }
+   }
+  },
+  {
+   "nom": "COS",
+   "mots": [
+    "cos!"
+   ],
+   "plafonds": {
+    "tshirts": {
+     "max": 8.1,
+     "habituel": 11.2
+    },
+    "hauts": {
+     "max": 16.4,
+     "habituel": 26.9
+    },
+    "bas": {
+     "max": 14.3,
+     "habituel": 21.7
+    }
+   }
+  },
+  {
+   "nom": "Norse Projects",
+   "mots": [
+    "norse projects",
+    "norse"
+   ],
+   "plafonds": {
+    "tshirts": {
+     "max": 16.4,
+     "habituel": 21.7
+    },
+    "hauts": {
+     "max": 26.9,
+     "habituel": 32.2
+    },
+    "bas": {
+     "max": 31.1,
+     "habituel": 42.7
+    },
+    "casquettes": {
+     "max": 11.2,
+     "habituel": 23.8
+    }
+   }
+  },
+  {
+   "nom": "Armor Lux",
+   "mots": [
+    "armor lux",
+    "armorlux",
+    "armor-lux"
+   ],
+   "plafonds": {
+    "tshirts": {
+     "max": 9.1,
+     "habituel": 12.2
+    },
+    "hauts": {
+     "max": 20.6,
+     "habituel": 32.2
+    },
+    "bas": {
+     "max": 8.1,
+     "habituel": 11.2
+    }
+   }
+  },
+  {
+   "nom": "Columbia",
+   "mots": [
+    "columbia"
+   ],
+   "plafonds": {
+    "tshirts": {
+     "max": 6.0,
+     "habituel": 9.1
+    },
+    "hauts": {
+     "max": 11.2,
+     "habituel": 15.4
+    },
+    "bas": {
+     "max": 13.3,
+     "habituel": 21.7
+    }
+   }
+  },
+  {
+   "nom": "Selected Homme",
+   "mots": [
+    "selected homme",
+    "selected!"
+   ],
+   "plafonds": {
+    "tshirts": {
+     "max": 3.9,
+     "habituel": 6.0
+    },
+    "hauts": {
+     "max": 6.0,
+     "habituel": 7.0
+    },
+    "bas": {
+     "max": 6.0,
+     "habituel": 9.1
+    }
+   }
+  },
+  {
+   "nom": "Samsoe Samsoe",
+   "mots": [
+    "samsoe",
+    "samsøe"
+   ],
+   "plafonds": {
+    "tshirts": {
+     "max": 9.1,
+     "habituel": 15.4
+    },
+    "hauts": {
+     "max": 16.4,
+     "habituel": 24.9
+    },
+    "bas": {
+     "max": 15.4,
+     "habituel": 24.3
+    }
+   }
+  },
+  {
+   "nom": "BonneGueule",
+   "mots": [
+    "bonne gueule",
+    "bonnegueule"
+   ],
+   "plafonds": {
+    "tshirts": {
+     "max": 32.2,
+     "habituel": 42.7
+    },
+    "hauts": {
+     "max": 44.8,
+     "habituel": 73.2
+    },
+    "bas": {
+     "max": 42.7,
+     "habituel": 53.2
+    }
+   }
+  },
+  {
+   "nom": "Asphalte",
+   "mots": [
+    "asphalte"
+   ],
+   "plafonds": {
+    "tshirts": {
+     "max": 14.0,
+     "habituel": 22.0
+    },
+    "hauts": {
+     "max": 31.1,
+     "habituel": 42.7
+    },
+    "bas": {
+     "max": 32.2,
+     "habituel": 53.2
+    }
+   }
+  },
+  {
+   "nom": "Nudie Jeans",
+   "mots": [
+    "nudie"
+   ],
+   "plafonds": {
+    "tshirts": {
+     "max": 11.2,
+     "habituel": 17.5
+    },
+    "hauts": {
+     "max": 21.7,
+     "habituel": 31.1
+    },
+    "bas": {
+     "max": 30.1,
+     "habituel": 40.1
+    }
+   }
+  },
+  {
+   "nom": "Edwin",
+   "mots": [
+    "edwin!"
+   ],
+   "plafonds": {
+    "tshirts": {
+     "max": 9.1,
+     "habituel": 15.4
+    },
+    "hauts": {
+     "max": 19.6,
+     "habituel": 26.9
+    },
+    "bas": {
+     "max": 32.2,
+     "habituel": 42.7
+    }
+   }
+  },
+  {
+   "nom": "Saint James",
+   "mots": [
+    "saint james"
+   ],
+   "plafonds": {
+    "tshirts": {
+     "max": 19.6,
+     "habituel": 26.9
+    },
+    "hauts": {
+     "max": 32.2,
+     "habituel": 52.1
+    },
+    "bas": {
+     "max": 11.2,
+     "habituel": 19.6
+    }
+   }
+  },
+  {
+   "nom": "Sunspel",
+   "mots": [
+    "sunspel"
+   ],
+   "plafonds": {
+    "tshirts": {
+     "max": 32.2,
+     "habituel": 42.7
+    },
+    "hauts": {
+     "max": 53.2,
+     "habituel": 62.7
+    }
+   }
+  },
+  {
+   "nom": "Maison Labiche",
+   "mots": [
+    "maison labiche",
+    "labiche"
+   ],
+   "plafonds": {
+    "tshirts": {
+     "max": 12.2,
+     "habituel": 16.4
+    },
+    "hauts": {
+     "max": 19.6,
+     "habituel": 32.2
+    },
+    "bas": {
+     "max": 26.9,
+     "habituel": 42.7
+    }
+   }
+  },
+  {
+   "nom": "Faguo",
+   "mots": [
+    "faguo"
+   ],
+   "plafonds": {
+    "tshirts": {
+     "max": 8.1,
+     "habituel": 11.2
+    },
+    "hauts": {
+     "max": 15.4,
+     "habituel": 26.9
+    },
+    "bas": {
+     "max": 13.3,
+     "habituel": 21.7
+    }
+   }
+  },
+  {
+   "nom": "A.P.C.",
+   "mots": [
+    "a.p.c",
+    "apc!"
+   ],
+   "plafonds": {
+    "tshirts": {
+     "max": 16.4,
+     "habituel": 24.1
+    },
+    "hauts": {
+     "max": 31.1,
+     "habituel": 42.7
+    },
+    "bas": {
+     "max": 35.4,
+     "habituel": 51.1
+    },
+    "casquettes": {
+     "max": 31.1,
+     "habituel": 42.5
+    }
+   }
+  },
+  {
+   "nom": "Scotch & Soda",
+   "mots": [
+    "scotch soda",
+    "scotch & soda",
+    "scotch&soda"
+   ],
+   "plafonds": {
+    "tshirts": {
+     "max": 6.0,
+     "habituel": 7.0
+    },
+    "hauts": {
+     "max": 8.1,
+     "habituel": 12.2
+    },
+    "bas": {
+     "max": 11.2,
+     "habituel": 14.1
+    }
+   }
+  },
+  {
+   "nom": "New Era",
+   "mots": [
+    "new era"
+   ],
+   "plafonds": {
+    "casquettes": {
+     "max": 9.1,
+     "habituel": 13.3
+    }
+   }
+  }
+ ]
+}

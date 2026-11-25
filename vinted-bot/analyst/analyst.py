@@ -72,10 +72,11 @@ SYSTEM_PROMPT = (Path(__file__).with_name("reference.md")).read_text(encoding="u
 RULES_FILES = [f.strip() for f in os.environ.get("RULES_FILES", os.environ.get("RULES_FILE", "rules.json,rules-mode.json")).split(",")
                if f.strip() and (Path(__file__).with_name(f.strip())).exists()]
 # Le module cartes Pokémon (rules-pokemon.json) est toujours chargé, même si RULES_FILES ne le cite pas.
-if (Path(__file__).with_name("rules-pokemon.json")).exists() and "rules-pokemon.json" not in RULES_FILES:
-    RULES_FILES.append("rules-pokemon.json")
+for _extra in ("rules-pokemon.json", "rules-perso.json"):
+    if (Path(__file__).with_name(_extra)).exists() and _extra not in RULES_FILES:
+        RULES_FILES.append(_extra)
 RULESETS = [json.loads((Path(__file__).with_name(f)).read_text(encoding="utf-8")) for f in RULES_FILES]
-RULES = next((r for r in RULESETS if r.get("type") != "tcgdex"), RULESETS[0])
+RULES = next((r for r in RULESETS if r.get("type") not in ("tcgdex", "perso")), RULESETS[0])
 TCG = pokemon.TCGdex(DATA)
 claude = anthropic.Anthropic() if MODE == "ia" else None  # lit ANTHROPIC_API_KEY
 vinted = VintedClient(VINTED_BASE_URL)
@@ -656,6 +657,62 @@ def pokemon_verdict(info: dict[str, Any], rs: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+GROUP_LABEL = {"tshirts": "T-shirt", "hauts": "Sweat / chemise", "bas": "Jean / pantalon", "casquettes": "Casquette"}
+
+
+def perso_job(job: dict[str, Any]) -> bool:
+    """Recherche 👕 (achats perso) : la marque et le prix de l'alerte suffisent, sans ouvrir la page Vinted.
+    Prévient sur Telegram si l'annonce est sous le plafond de sa marque. Renvoie False si ce n'est pas une recherche 👕."""
+    search = job.get("search") or ""
+    rs = next((r for r in RULESETS if r.get("type") == "perso" and search.startswith(r["prefixe_recherche"])), None)
+    if not rs:
+        return False
+    alert = job.get("alert") or {}
+    title, brand = alert.get("title", ""), alert.get("brand", "") or ""
+    text = pokemon.norm(f"{brand} {title}")
+    s = pokemon.norm(search)
+    group = next((g for k, g in rs["groupes"].items() if pokemon.norm(k) in s), None)
+    if not group:
+        log.warning("recherche 👕 sans catégorie reconnue dans son nom : %s", search)
+        return True
+    if hit := mentioned_defects(pokemon.norm(title), rs["mots_exclus"]):
+        log.info("perso ignoré (%s) · %s", hit[0], title)
+        return True
+    marque = next((m for m in rs["marques"] if mentioned_defects(text, m["mots"])), None)
+    if not marque:
+        return True
+    cap = marque["plafonds"].get(group) or (rs.get("plafond_casquette_defaut") if group == "casquettes" else None)
+    total = float(alert.get("total_price") or 0) or total_from_price(float(alert.get("price") or 0))
+    if not cap or not total or total > cap["max"]:
+        log.info("perso trop cher · %s · %s · %.2f € (max %s)", marque["nom"], title, total, cap and cap["max"])
+        return True
+    pct = 100 * (1 - total / cap["habituel"]) if cap.get("habituel") else 0
+    size, cond = alert.get("size") or "", alert.get("condition") or alert.get("status") or ""
+    log.info("perso BONNE AFFAIRE · %s · %s · %.2f €", marque["nom"], title, total)
+    send("\n".join([
+        f"👕 <b>Bonne affaire · {escape(marque['nom'])}</b> · {GROUP_LABEL.get(group, group)}",
+        f"{escape(title)}" + (f" · {escape(str(size))}" if size else "") + (f" · {escape(str(cond))}" if cond else ""),
+        f"💶 <b>{total:.2f} €</b> tout compris · habituellement ~{cap['habituel']:.0f} €" + (f" (−{pct:.0f} %)" if pct > 0 else ""),
+        "",
+        escape(job["url"]),
+        *([f"🛒 <a href=\"{escape(alert['links']['buy'])}\">Acheter</a> · "
+           f"<a href=\"{escape(alert['links'].get('message_seller', job['url']))}\">Écrire au vendeur</a>"]
+          if (alert.get("links") or {}).get("buy") else []),
+    ]))
+    try:
+        f = DATA / "perso.csv"
+        new = not f.exists()
+        with f.open("a", newline="", encoding="utf-8-sig") as fh:
+            w = csv.writer(fh, delimiter=";")
+            if new:
+                w.writerow(["date", "marque", "categorie", "titre", "prix_total", "habituel", "url"])
+            w.writerow([datetime.now().isoformat(timespec="seconds"), marque["nom"], group, title, f"{total:.2f}",
+                        cap["habituel"], job["url"]])
+    except OSError:
+        pass
+    return True
+
+
 def pokemon_prefilter(job: dict[str, Any]) -> str:
     """Alerte d'une recherche 🃏 : si le titre et le prix suffisent à écarter l'annonce, on évite d'ouvrir
     la page Vinted et de lire les photos (le plus lent). La description ne peut que baisser la cote
@@ -691,6 +748,8 @@ def rules_verdict_auto(info: dict[str, Any], job: dict[str, Any]) -> dict[str, A
         candidates = [next((r for r in RULESETS if not r.get("prefixe_recherche")), RULESETS[0])]
     first = None
     for rs in candidates or RULESETS:
+        if rs.get("type") == "perso":
+            continue
         if rs.get("type") == "tcgdex":
             v = pokemon_verdict(info, rs)
             first = first or v
@@ -793,6 +852,8 @@ def worker() -> None:
                 continue
             seen.add(job["id"])
         try:
+            if not job["manual"] and perso_job(job):
+                continue
             if not job["manual"] and MODE == "regles" and (skip := pokemon_prefilter(job)):
                 log.info("PASSER (titre et prix suffisent) · %s · %s", job.get("alert", {}).get("title", ""), skip)
                 continue
