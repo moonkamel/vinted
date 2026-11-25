@@ -553,13 +553,16 @@ def pokemon_verdict(info: dict[str, Any], rs: dict[str, Any]) -> dict[str, Any]:
         return _stop("réimpression possible", f"réimpression d'anniversaire ({hit[0]}) : la cote de l'originale ne s'applique pas")
     reverse = has(both, "reverse")
     many = len(groups) > 1 or has(title, "lot")
-    total, parts, cards, missing = 0.0, [], [], 0
+    total, parts, cards, missing, thin = 0.0, [], [], 0, []
     for g in groups:
         priced = [(v, c) for v, c in (TCG.value(x["id"], None if many and reverse else reverse) for x in g["cartes"]) if v]
         if not priced:
             missing += 1
             continue
         v, c = min(priced, key=lambda x: x[0])  # réimpressions possibles : on garde la moins chère
+        low = c["cm"].get("low-holo" if reverse and not many else "low") or 0
+        if low and low < rs.get("ecart_cote_min", 0.08) * v:
+            thin.append(f"{c['name']} : de {low:.2f} € à {v:.2f} €")
         total += v
         cards.append((g, c, v, len(g["cartes"])))
         parts.append(f"{c['name']} {c['local_id']}/{c['official']} ({c['set']}) {v:.2f} €")
@@ -590,6 +593,10 @@ def pokemon_verdict(info: dict[str, Any], rs: dict[str, Any]) -> dict[str, Any]:
                 rest = rest.replace(w, " ")
             if d["facteur"] < factor:
                 factor, why = d["facteur"], f"{d['label']} : {', '.join(hit[:2])}"
+    # Carte en italien, allemand, espagnol… : Cardmarket mélange les langues, ces versions se vendent bien moins cher
+    lang = rs.get("autres_langues") or {}
+    if (hit := mentioned_defects(both, lang.get("mots", []))) and lang.get("facteur", 1) < factor:
+        factor, why = lang["facteur"], f"carte en langue étrangère : {hit[0]}"
     resale = total * rs["facteur_revente"] * factor
     how = (f"Cardmarket {' + '.join(parts)}" + (f" ; {missing} carte(s) sans prix" if missing else "")
            + f" → × {rs['facteur_revente']} (état inconnu, frais de revente)" + (f" × {factor} ({why})" if why else ""))
@@ -608,6 +615,10 @@ def pokemon_verdict(info: dict[str, Any], rs: dict[str, Any]) -> dict[str, Any]:
         # ou une erreur d'identification : pas d'alerte, comme pour un vendeur sans aucun avis.
         confidence = "faible" if reviews == 0 or info["total_price"] < rs.get("prix_copie_ratio", 0.05) * total \
             else min(confidence, "moyenne", key=CONFIDENCE_RANK.get)
+    if thin:
+        # Peu de ventes et des prix très dispersés : la cote n'est pas fiable, pas d'alerte automatique
+        flags.append("cote Cardmarket peu fiable (prix très dispersés, " + "; ".join(thin[:2]) + ")")
+        confidence = "faible"
     if any(f.startswith("vendeur professionnel") for f in flags):
         confidence = "faible"
     return {
@@ -616,7 +627,7 @@ def pokemon_verdict(info: dict[str, Any], rs: dict[str, Any]) -> dict[str, Any]:
         "points_verifies": checked, "signaux_alerte": flags,
         "photos_manquantes": ["recto et verso nets, coins et bords"] if not lot else ["photo nette de chaque carte de valeur"],
         "revente_realiste_eur": round(resale, 2), "port_entrant_eur": rs["port"], "calcul_revente": how,
-        "verdict": "ACHETER" if not flags or (cheap and len(flags) == 1) else "OFFRE",
+        "verdict": "ACHETER" if not flags or (cheap and len(flags) == 1 and not thin) else "OFFRE",
         "confiance": confidence,
         "resume": ("Lot : valeur minimale, seules les cartes reconnues sont comptées." if lot else
                    "Carte reconnue et cotée sur Cardmarket.") + (" Prix très bas : vérifie bien avant de payer." if cheap else ""),
