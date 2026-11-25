@@ -120,15 +120,20 @@
    "nom": "💎 Rolleiflex (bi-objectif)",
    "tous": [
     "rolleiflex|rollei",
-    "rolleiflex|2.8|3.5|tlr|bi-objectif|biobjectif"
+    "rolleiflex|tlr|bi-objectif|biobjectif|twin lens"
    ],
    "aucun": [
-    "numerique",
+    "af-m",
+    "beirette",
     "digital",
-    "mp",
     "megapixel",
+    "mp",
     "mpx",
-    "pixels"
+    "numerique",
+    "pixels",
+    "prego",
+    "rollei 35",
+    "rollei35"
    ],
    "revente": 250,
    "port": 8,
@@ -464,7 +469,16 @@
   "pieces detachees",
   "adaptateur",
   "adapter",
-  "bague"
+  "bague",
+  "affiche",
+  "poster",
+  "publicite",
+  "pub!",
+  "advertising",
+  "werbung",
+  "prospectus",
+  "depliant",
+  "fiche technique"
  ],
  "objet_principal": [
   "appareil",
