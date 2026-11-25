@@ -382,7 +382,8 @@ def rules_verdict(info: dict[str, Any]) -> dict[str, Any]:
     bundled = lambda w: re.search(r"(avec|\+|with|inclus|incl\.?|et|and|plus|con|mit)\s+(sa |son |ses |la |le |les |l')?"
                                   + re.escape(w.rstrip("!")), title)
     strong_hit = [w for w in strong if has(title, w) and not bundled(w)]
-    is_strong = bool(strong_hit) and not any(has(title, o) for o in RULES.get("objet_principal", []))
+    is_strong = bool(strong_hit) and (any(has(head, w) for w in strong_hit)
+                                      or not any(has(title, o) for o in RULES.get("objet_principal", [])))
     if is_strong or (acc and (any(has(head, a) for a in acc)
                      or (any(has(title, a) for a in acc) and not any(has(title, o) for o in main_words)))):
         return {
