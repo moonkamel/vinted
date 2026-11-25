@@ -284,17 +284,21 @@ def refined_title(name: str, info: dict[str, Any], f: dict[str, Any]) -> str:
     return " · ".join(parts)
 
 
-def gather(job: dict[str, Any]) -> dict[str, Any]:
-    """Assemble les infos de l'annonce : alerte de vinted-bot + page complète Vinted."""
+def gather(job: dict[str, Any], full: bool = True) -> dict[str, Any]:
+    """Assemble les infos de l'annonce : alerte de vinted-bot + page complète Vinted (sauf full=False)."""
     alert = job.get("alert") or {}
     listing: dict[str, Any] = {}
     try:
+        if not full:
+            raise LookupError("alerte seule")
         listing = vinted.get_listing(job["url"])
         if listing.get("seller", {}).get("id"):
             try:
                 listing["seller"] |= vinted.get_seller(listing["seller"]["id"])
             except Exception as exc:  # noqa: BLE001
                 log.warning("profil vendeur indisponible : %s", exc)
+    except LookupError:
+        pass
     except Exception as exc:  # noqa: BLE001
         log.warning("page de l'annonce indisponible (%s), analyse avec l'alerte seule", exc)
     price = float(listing.get("price") or alert.get("price") or 0)
@@ -645,6 +649,24 @@ def pokemon_verdict(info: dict[str, Any], rs: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def pokemon_prefilter(job: dict[str, Any]) -> str:
+    """Alerte d'une recherche 🃏 : si le titre et le prix suffisent à écarter l'annonce, on évite d'ouvrir
+    la page Vinted et de lire les photos (le plus lent). La description ne peut que baisser la cote
+    (état, langue), donc une carte déjà trop chère sur le titre seul le reste."""
+    rs = next((r for r in RULESETS if r.get("type") == "tcgdex" and is_pokemon_search(r, job.get("search") or "")), None)
+    if not rs:
+        return ""
+    info = gather(job, full=False)
+    info["labels"] = {"photos_lues": 1, "texte": ""}  # pas d'OCR à ce stade
+    v = pokemon_verdict(info, rs)
+    if v["modele_identifie"] == "carte non identifiée":
+        return ""  # la description ou les photos peuvent encore l'identifier
+    if v["revente_realiste_eur"] <= 0:
+        return v["signaux_alerte"][-1] if v["signaux_alerte"] else v["modele_identifie"]
+    v = apply_rule(info, v)
+    return "" if v["regle_ok"] else f"{v['modele_identifie']} : marge {v['marge']:.0f} €"
+
+
 def is_pokemon_search(rs: dict[str, Any], search: str) -> bool:
     return search.startswith(rs.get("prefixe_recherche") or "\0") or any(
         has(norm(search), w) for w in rs.get("mots_recherche", []))
@@ -764,6 +786,9 @@ def worker() -> None:
                 continue
             seen.add(job["id"])
         try:
+            if not job["manual"] and MODE == "regles" and (skip := pokemon_prefilter(job)):
+                log.info("PASSER (titre et prix suffisent) · %s · %s", job.get("alert", {}).get("title", ""), skip)
+                continue
             info = gather(job)
             if info.get("reserved") and not job["manual"]:
                 log.info("annonce déjà réservée, ignorée : %s", info["url"])
@@ -802,7 +827,9 @@ def main() -> None:
     if any(rs.get("type") == "tcgdex" for rs in RULESETS):
         TCG.start()
     threading.Thread(target=telegram_loop, daemon=True).start()
-    threading.Thread(target=worker, daemon=True).start()
+    # Plusieurs analyses en parallèle : la recherche "pokemon" envoie une annonce toutes les quelques secondes
+    for _ in range(max(1, int(os.environ.get("WORKERS", "3")))):
+        threading.Thread(target=worker, daemon=True).start()
     log.info("Analyste prêt (mode %s, modèle %s, notifications : %s).", MODE, MODEL if MODE == "ia" else "-", NOTIFY)
     ThreadingHTTPServer(("0.0.0.0", 8080), Hook).serve_forever()
 
