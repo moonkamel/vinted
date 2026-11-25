@@ -79,7 +79,13 @@ RULES = next((r for r in RULESETS if r.get("type") != "tcgdex"), RULESETS[0])
 TCG = pokemon.TCGdex(DATA)
 claude = anthropic.Anthropic() if MODE == "ia" else None  # lit ANTHROPIC_API_KEY
 vinted = VintedClient(VINTED_BASE_URL)
-jobs: queue.Queue[dict[str, Any]] = queue.Queue()
+# Liens collés à la main en priorité, avant les alertes en attente des recherches
+jobs: queue.PriorityQueue[tuple[int, int, dict[str, Any]]] = queue.PriorityQueue()
+job_counter = __import__("itertools").count()
+
+
+def enqueue(job: dict[str, Any]) -> None:
+    jobs.put((0 if job["manual"] else 1, next(job_counter), job))
 seen_lock = threading.Lock()
 seen: set[int] = set()
 
@@ -156,7 +162,7 @@ def telegram_loop() -> None:
                          "Tu peux aussi me coller un lien Vinted pour une analyse à la demande.")
                 elif m := re.search(r"https?://(?:www\.)?vinted\.[a-z.]+/items/(\d+)\S*", text):
                     send("🔎 Analyse en cours…")
-                    jobs.put({"manual": True, "url": m.group(0), "id": int(m.group(1))})
+                    enqueue({"manual": True, "url": m.group(0), "id": int(m.group(1))})
                 elif text:
                     send("Colle-moi un lien d'annonce Vinted (…/items/…) et je l'analyse.")
         except Exception as exc:  # noqa: BLE001
@@ -188,7 +194,7 @@ class Hook(BaseHTTPRequestHandler):
             return
         for item in items:
             if item.get("kind") in ("listing", "price_drop", "seller_upload"):
-                jobs.put({"manual": False, "id": item["id"], "url": item["url"], "alert": item,
+                enqueue({"manual": False, "id": item["id"], "url": item["url"], "alert": item,
                           "search": payload.get("search", ""), "search_id": payload.get("search_id")})
 
     def _genuine(self, body: bytes) -> bool:
@@ -752,7 +758,7 @@ def should_notify(v: dict[str, Any]) -> bool:
 
 def worker() -> None:
     while True:
-        job = jobs.get()
+        job = jobs.get()[2]
         with seen_lock:
             if not job["manual"] and job["id"] in seen:
                 continue
@@ -763,8 +769,12 @@ def worker() -> None:
                 log.info("annonce déjà réservée, ignorée : %s", info["url"])
                 continue
             if MODE == "regles":
-                pokemon_job = any(rs.get("type") == "tcgdex" and is_pokemon_search(rs, job.get("search") or "")
-                                  for rs in RULESETS)
+                # Recherche 🃏, ou lien collé à la main d'une annonce Pokémon (marque ou titre)
+                pokemon_job = any(rs.get("type") == "tcgdex" and (
+                    is_pokemon_search(rs, job.get("search") or "")
+                    or (job["manual"] and is_pokemon_search(rs, f"{info['brand']} {info['title']}"))) for rs in RULESETS)
+                if pokemon_job:
+                    job["search"] = job.get("search") or "🃏"
                 # Cartes : l'OCR n'est lancé que si le titre ne suffit pas (voir pokemon_verdict), pour aller vite.
                 if OCR_ON and not pokemon_job:
                     info["labels"] = read_labels(info["photos"])
