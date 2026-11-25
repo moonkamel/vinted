@@ -228,15 +228,18 @@ class TCGdex:
                 pass
         return c
 
-    def value(self, card_id: str, reverse: bool = False) -> tuple[float | None, dict[str, Any]]:
+    def value(self, card_id: str, reverse: bool | None = False) -> tuple[float | None, dict[str, Any]]:
         """Prix de référence prudent : le plus bas entre tendance, moyennes 30 et 7 jours et prix moyen de vente.
         Sur une carte peu échangée, une seule vente chère fait exploser la tendance (ex. 232 € pour une
         commune reverse vendue 15 à 25 €) : prendre le plus bas évite ces fausses pépites."""
         c = self.card(card_id)
         cm = c["cm"]
         base = ("trend", "avg30", "avg7", "avg")
-        keys = (tuple(f"{k}-holo" for k in base), base) if reverse else (base,)
-        for k in keys:
+        rev = tuple(f"{k}-holo" for k in base)
+        if reverse is None:  # lot : on ne sait pas quelle carte est en reverse, on prend la version la moins chère
+            vals = [cm.get(x) for x in base + rev if (cm.get(x) or 0) > 0]
+            return (float(min(vals)) if vals else None), c
+        for k in ((rev, base) if reverse else (base,)):
             vals = [cm.get(x) for x in k if (cm.get(x) or 0) > 0]
             if vals:
                 return float(min(vals)), c

@@ -552,9 +552,10 @@ def pokemon_verdict(info: dict[str, Any], rs: dict[str, Any]) -> dict[str, Any]:
             x["set"] not in rs.get("extensions_anniversaire", []) for g in groups for x in g["cartes"]):
         return _stop("réimpression possible", f"réimpression d'anniversaire ({hit[0]}) : la cote de l'originale ne s'applique pas")
     reverse = has(both, "reverse")
+    many = len(groups) > 1 or has(title, "lot")
     total, parts, cards, missing = 0.0, [], [], 0
     for g in groups:
-        priced = [(v, c) for v, c in (TCG.value(x["id"], reverse) for x in g["cartes"]) if v]
+        priced = [(v, c) for v, c in (TCG.value(x["id"], None if many and reverse else reverse) for x in g["cartes"]) if v]
         if not priced:
             missing += 1
             continue
@@ -596,7 +597,8 @@ def pokemon_verdict(info: dict[str, Any], rs: dict[str, Any]) -> dict[str, Any]:
     checked = [f"carte identifiée par {g0['via']}" + (" (réimpressions possibles : prix le plus bas retenu)" if n0 > 1 else ""),
                f"prix Cardmarket du {str(c0['cm'].get('updated') or '')[:10]}"]
     if reverse:
-        checked.append("version reverse : prix reverse utilisé")
+        checked.append("lot avec reverse : version la moins chère retenue pour chaque carte" if many
+                       else "version reverse : prix reverse utilisé")
     sure = all(g["sure"] for g, *_ in cards)
     confidence = "elevee" if sure and not lot else "moyenne"
     if cheap:
