@@ -78,8 +78,32 @@
     "manteau|coat"
    ],
    "aucun": [
+    "ans!",
+    "bebe",
+    "cardigan",
+    "crochet",
+    "enfant",
+    "fille",
+    "garcon",
+    "gilet",
     "homme",
+    "junior",
+    "kids",
+    "knit",
+    "maille",
     "men",
+    "tricot"
+   ],
+   "p25": 116,
+   "port": 6
+  },
+  {
+   "nom": "Maje veste / cardigan en maille",
+   "tous": [
+    "maje",
+    "maille|tricot|knit|cardigan|crochet"
+   ],
+   "aucun": [
     "enfant",
     "fille",
     "garcon",
@@ -88,8 +112,8 @@
     "junior",
     "ans!"
    ],
-   "p25": 116,
-   "port": 6
+   "p25": 48,
+   "port": 4.5
   },
   {
    "nom": "Maje veste (tweed)",
@@ -98,15 +122,20 @@
     "veste|blazer|tweed"
    ],
    "aucun": [
-    "sans manche",
-    "gilet",
+    "ans!",
+    "bebe",
+    "cardigan",
+    "crochet",
     "enfant",
     "fille",
     "garcon",
-    "bebe",
-    "kids",
+    "gilet",
     "junior",
-    "ans!"
+    "kids",
+    "knit",
+    "maille",
+    "sans manche",
+    "tricot"
    ],
    "p25": 116,
    "port": 5
@@ -166,15 +195,21 @@
     "manteau|coat|caban"
    ],
    "aucun": [
-    "homme",
-    "men",
+    "ans!",
+    "bebe",
+    "cardigan",
+    "crochet",
     "enfant",
     "fille",
     "garcon",
-    "bebe",
-    "kids",
+    "gilet",
+    "homme",
     "junior",
-    "ans!"
+    "kids",
+    "knit",
+    "maille",
+    "men",
+    "tricot"
    ],
    "p25": 111,
    "port": 6
@@ -240,13 +275,19 @@
     "manteau|coat"
    ],
    "aucun": [
+    "ans!",
+    "bebe",
+    "cardigan",
+    "crochet",
     "enfant",
     "fille",
     "garcon",
-    "bebe",
-    "kids",
+    "gilet",
     "junior",
-    "ans!"
+    "kids",
+    "knit",
+    "maille",
+    "tricot"
    ],
    "p25": 125,
    "port": 6
