@@ -376,8 +376,15 @@ def rules_verdict(info: dict[str, Any]) -> dict[str, Any]:
     acc = RULES.get("accessoires_titre", [])
     head = " ".join(title.split()[:3])
     main_words = RULES.get("objet_principal", []) + [g for mm in RULES["modeles"] for g in mm["tous"][1:2]]
-    if acc and (any(has(head, a) for a in acc)
-                or (any(has(title, a) for a in acc) and not any(has(title, o) for o in main_words))):
+    # Accessoires "forts" (notice, manual, guide, affiche…) : accessoire seul même si le titre cite le modèle,
+    # sauf si le titre parle aussi de l'appareil, ou si l'objet est vendu AVEC ("avec notice", "+ manual").
+    strong = RULES.get("accessoires_forts", [])
+    bundled = lambda w: re.search(r"(avec|\+|with|inclus|incl\.?|et|and|plus|con|mit)\s+(sa |son |ses |la |le |les |l')?"
+                                  + re.escape(w.rstrip("!")), title)
+    strong_hit = [w for w in strong if has(title, w) and not bundled(w)]
+    is_strong = bool(strong_hit) and not any(has(title, o) for o in RULES.get("objet_principal", []))
+    if is_strong or (acc and (any(has(head, a) for a in acc)
+                     or (any(has(title, a) for a in acc) and not any(has(title, o) for o in main_words)))):
         return {
             "modele_identifie": "accessoire seul", "dans_les_niches": False, "authenticite": "doute",
             "points_verifies": [], "signaux_alerte": ["le titre décrit un accessoire, pas l'objet lui-même"],
@@ -387,9 +394,12 @@ def rules_verdict(info: dict[str, Any]) -> dict[str, Any]:
         }
     # La marque du modèle (1er groupe) doit être dans le titre ou le champ marque, pas seulement
     # dans la description : sinon une liste de hashtags "Carhartt Patagonia TNF…" suffirait.
-    model = next((m for m in RULES["modeles"]
-                  if has(f"{title} {brand} {label_text}", m["tous"][0]) and all(has(text, g) for g in m["tous"][1:])
-                  and not any(has(text, w) for w in m["aucun"])), None)
+    def find(brand_zone: str, zone: str) -> dict[str, Any] | None:
+        return next((m for m in RULES["modeles"]
+                     if has(brand_zone, m["tous"][0]) and all(has(zone, g) for g in m["tous"][1:])
+                     and not any(has(zone, w) for w in m["aucun"])), None)
+    # Le titre et la description priment ; le texte lu sur les photos ne sert qu'à compléter un titre vague.
+    model = find(f"{title} {brand}", f"{title} {desc}") or find(f"{title} {brand} {label_text}", text)
     flags: list[str] = []
     seller = info["seller"] or {}
     reviews = seller.get("reviews") or 0
