@@ -408,7 +408,12 @@
   "neuf sans etiquette": 1.0,
   "tres bon etat": 1.0,
   "bon etat": 0.9,
-  "satisfaisant": 0.7
+  "satisfaisant": 0.7,
+  "new with tags": 1.0,
+  "new without tags": 1.0,
+  "very good": 1.0,
+  "good": 0.9,
+  "satisfactory": 0.7
  },
  "tailles_peu_demandees": [],
  "decote_taille": 1.0,

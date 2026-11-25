@@ -321,7 +321,12 @@
   "neuf sans etiquette": 1.0,
   "tres bon etat": 1.0,
   "bon etat": 0.85,
-  "satisfaisant": 0.6
+  "satisfaisant": 0.6,
+  "new with tags": 1.0,
+  "new without tags": 1.0,
+  "very good": 1.0,
+  "good": 0.85,
+  "satisfactory": 0.6
  },
  "tailles_peu_demandees": [
   "xxs",

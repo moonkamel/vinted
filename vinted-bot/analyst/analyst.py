@@ -241,7 +241,10 @@ def read_labels(photos: list[str]) -> dict[str, Any]:
             log.warning("OCR impossible sur une photo : %s", exc)
             continue
         merged["photos_lues"] += 1
-        merged["texte"] = (merged["texte"] + " " + re.sub(r"\s+", " ", ocr.norm(raw)))[:4000]
+        flat = re.sub(r"\s+", " ", ocr.norm(raw))
+        # Lettres espacées (logo "s a n d r o") : on ajoute une version recollée pour retrouver la marque.
+        glued = re.sub(r"\b(?:\w ){2,}\w\b", lambda m: m.group(0).replace(" ", ""), flat)
+        merged["texte"] = (merged["texte"] + " " + flat + (" " + glued if glued != flat else ""))[:6000]
         for key in ("brands", "competitors"):
             merged[key] += [x for x in f.get(key, []) if x not in merged[key]]
         for key in ("made_in", "rn", "ref", "date"):
