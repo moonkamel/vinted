@@ -179,7 +179,7 @@ class Hook(BaseHTTPRequestHandler):
         for item in items:
             if item.get("kind") in ("listing", "price_drop", "seller_upload"):
                 jobs.put({"manual": False, "id": item["id"], "url": item["url"], "alert": item,
-                          "search": payload.get("search", "")})
+                          "search": payload.get("search", ""), "search_id": payload.get("search_id")})
 
     def _genuine(self, body: bytes) -> bool:
         ts = self.headers.get("X-Vinted-Bot-Timestamp", "")
@@ -296,6 +296,7 @@ def gather(job: dict[str, Any]) -> dict[str, Any]:
         "reserved": listing.get("reserved", False),
         "seller": listing.get("seller") or alert.get("seller_profile") or {"login": alert.get("seller")},
         "search": job.get("search", ""),
+        "search_id": job.get("search_id"),
         "photos": photos[:MAX_PHOTOS],
     }
 
@@ -534,6 +535,9 @@ def render(info: dict[str, Any], v: dict[str, Any], cost: float) -> str:
     if v["message_vendeur"]:
         lines.append(f"✉️ <code>{escape(v['message_vendeur'])}</code>")
     lines.append(f"\n{escape(info['url'])}")
+    if info.get("search_id"):
+        lines.append(f"🛑 Acheté ? Pour arrêter la recherche « {escape(info['search'])} », envoie au bot Vinted : "
+                     f"<code>/remove {info['search_id']}</code> (ou <code>/pause {info['search_id']}</code>)")
     lines.append("<i>analyse par règles (gratuite)</i>" if MODE == "regles" else f"<i>analyse {MODEL} ≈ {cost:.3f} $</i>")
     return "\n".join(lines)
 
